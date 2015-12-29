@@ -18,6 +18,7 @@
 #include "TH2D.h"
 #include "TH3F.h"
 
+enum DecayMode {kKstarProton, kLambda1520Pion, kDeltaPPkaon, kPionKaonProton, kLambdaPion, kKshortProton};
 
 TLorentzVector smearMom(int iParticleIndex,TLorentzVector const& b);
 TVector3 smearPos(TLorentzVector const& mom, TLorentzVector const& rMom, TVector3 const& pos);
@@ -45,7 +46,8 @@ int getPhiIndexHftRatio(double);
 
 TF1* fKaonMomResolution = NULL;
 TF1* fPionMomResolution = NULL;
-const Int_t nParticles = 2;
+TF1* fProtonMomResolution = NULL;
+const Int_t nParticles = 3;
 const Int_t nCent = 9;
 
 // HFT ratio binning
@@ -99,6 +101,7 @@ void loadAllDistributions()
    TFile f("momentum_resolution.root");
    fPionMomResolution = (TF1*)f.Get("fPion")->Clone("fPion");
    fKaonMomResolution = (TF1*)f.Get("fKaon")->Clone("fKaon");
+   fProtonMomResolution =  (TF1*)f.Get("fKaon")->Clone("fKaon");
    f.Close();
 
   TFile fVertex("Run14_After107_Vz_Cent.root");
@@ -112,8 +115,8 @@ void loadAllDistributions()
    fVertex.Close();
 
    cout << "Loading input HFT ratios and DCA ..." << endl;
-   TFile fHftRatio1("HFT_Ratio_VsPt_Centrality_Eta_Phi_Vz_Zdcx_v4.root");
-   TFile fDca1("2DProjection_simCent_NoBinWidth_3D_Dca_VsPt_Centrality_Eta_Phi_Vz_Zdcx_v3.root");
+   TFile fHftRatio1("IncludeProton/HFTRatio/HFT_Ratio_VsPt_Centrality_Eta_Phi_Vz_Zdcx.root");
+   TFile fDca1("IncludeProton/DCA/Proton/NoBinWidth_3D_Dca_VsPt_Centrality_Eta_Phi_Vz_Zdcx_proton.root");
 
    for (int iParticle = 0; iParticle < nParticles; ++iParticle)
    {
