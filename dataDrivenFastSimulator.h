@@ -88,6 +88,8 @@ TH2D* h2Dca[nParticles][nEtas][nVzs][nCentDca][nPtBins];
 
 TH1D* hTpcPiPlus[nCent];
 TH1D* hTpcPiMinus[nCent];
+TH1D* hTpcPPlus[nCent];
+TH1D* hTpcPMinus[nCent];
 TH1D* hTpcKPlus[nCent];
 TH1D* hTpcKMinus[nCent];
 
@@ -101,7 +103,7 @@ void loadAllDistributions()
    TFile f("momentum_resolution.root");
    fPionMomResolution = (TF1*)f.Get("fPion")->Clone("fPion");
    fKaonMomResolution = (TF1*)f.Get("fKaon")->Clone("fKaon");
-   fProtonMomResolution =  (TF1*)f.Get("fKaon")->Clone("fKaon");
+   fProtonMomResolution =  (TF1*)f.Get("fKaon")->Clone("fKaon"); // using kaons for now
    f.Close();
 
   TFile fVertex("Run14_After107_Vz_Cent.root");
@@ -117,6 +119,7 @@ void loadAllDistributions()
    cout << "Loading input HFT ratios and DCA ..." << endl;
    TFile fHftRatio1("IncludeProton/HFTRatio/HFT_Ratio_VsPt_Centrality_Eta_Phi_Vz_Zdcx.root");
    TFile fDca1("IncludeProton/DCA/Proton/NoBinWidth_3D_Dca_VsPt_Centrality_Eta_Phi_Vz_Zdcx_proton.root");
+   TFile fDca2("IncludeProton/DCA/PionKaon/NoBinWidth_3D_Dca_VsPt_Centrality_Eta_Phi_Vz_Zdcx.root");
 
    for (int iParticle = 0; iParticle < nParticles; ++iParticle)
    {
@@ -145,7 +148,11 @@ void loadAllDistributions()
          {
            for (int iPt = 0; iPt < nPtBins; ++iPt)
            {
-             h2Dca[iParticle][iEta][iVz][iCent][iPt] = (TH2D*)((fDca1.Get(Form("mh2DcaPtCentPartEtaVz_%i_%i_%i_%i_%i", iParticle, iEta, iVz, iCent, iPt))));
+	     if(iParticle == 2)
+	       h2Dca[iParticle][iEta][iVz][iCent][iPt] = (TH2D*)((fDca1.Get(Form("mh2DcaPtCentPartEtaVz_%i_%i_%i_%i_%i", 0, iEta, iVz, iCent, iPt))));
+	     else
+	       h2Dca[iParticle][iEta][iVz][iCent][iPt] = (TH2D*)((fDca2.Get(Form("mh2DcaPtCentPartEtaVz_%i_%i_%i_%i_%i", iParticle, iEta, iVz, iCent, iPt))));
+
              h2Dca[iParticle][iEta][iVz][iCent][iPt]->SetDirectory(0);
            }
          }
@@ -170,6 +177,8 @@ void loadAllDistributions()
      hTpcPiPlus[iCent]->SetDirectory(0);
      hTpcPiMinus[iCent] = (TH1D*)fTpcPiMinus.Get(Form("h1Ratiocent_%i",iCent));
      hTpcPiMinus[iCent] ->SetDirectory(0);
+     hTpcPPlus[iCent] = hTpcPiPlus[iCent]; // set as the same as pions (may be temporary)
+     hTpcPMinus[iCent] = hTpcPiMinus[iCent];
      hTpcKPlus[iCent] = (TH1D*)fTpcKPlus.Get(Form("h1Ratiocent_%i",iCent));
      hTpcKPlus[iCent]->SetDirectory(0);
      hTpcKMinus[iCent] = (TH1D*)fTpcKMinus.Get(Form("h1Ratiocent_%i",iCent));
@@ -239,7 +248,22 @@ float dca1To2(TVector3 const& p1, TVector3 const& pos1, TVector3 const& p2, TVec
 
 TLorentzVector smearMom(int const iParticleIndex,TLorentzVector const& b)
 {
-   TF1* fMomResolution = iParticleIndex == 1 ? fKaonMomResolution : fPionMomResolution;
+   TF1* fMomResolution;
+   switch (iParticleIndex)
+   {
+     case 0:
+       fMomResolution = fPionMomResolution;
+       break;
+     case 1:
+       fMomResolution = fKaonMomResolution;
+       break;
+     case 2:
+       fMomResolution = fProtonMomResolution;
+       break;
+     default:
+       cerr << "smearMom: Unknown particle" << endl;
+       fMomResolution = 0;
+   }
 
    float const pt = b.Perp();
    float const sPt = gRandom->Gaus(pt, pt * fMomResolution->Eval(pt));
