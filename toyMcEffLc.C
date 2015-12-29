@@ -47,6 +47,7 @@ void bookObjects();
 void write();
 TPythia6Decayer* pydecay;
 TNtuple* nt;
+TNtuple* ntTMVA;
 TFile* result;
 
 TF1* fWeightFunction = NULL;
@@ -57,6 +58,7 @@ std::pair<float, float> const momentumRange(0, 12);
 
 float const acceptanceRapidity = 1.0;
 float const M_KS = 0.49767;
+DecayMode const mDecayMode = kPionKaonProton;
 
 bool const saveNt = false;
 //============== main  program ==================
@@ -69,6 +71,7 @@ void toyMcEffLc(int npart = 100)
    pydecay = TPythia6Decayer::Instance();
    pydecay->Init();
 
+   float branchingRatio = 0;
    switch(mDecayMode)
    {
      case kKstarProton:
@@ -114,8 +117,8 @@ void toyMcEffLc(int npart = 100)
 
       getKinematics(*b_d, M_LAMBDA_C_PLUS);
 
-      decayAndFill(4122, b_d, ptl, mDecayMode);
-      decayAndFill(-4122, b_d, ptl, mDecayMode);
+      decayAndFill(4122, b_d, M_LAMBDA_C_PLUS, ptl);
+      decayAndFill(-4122, b_d, M_LAMBDA_C_PLUS, ptl);
 
       if (ipart%1000 == 1) // save
       {
