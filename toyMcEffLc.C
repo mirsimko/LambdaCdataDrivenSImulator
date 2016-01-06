@@ -40,8 +40,9 @@ using namespace std;
 
 void setDecayChannels(int const mdme);
 void decayAndFill(int const kf, TLorentzVector* b, double const weight, TClonesArray& daughters);
-void fill(int const kf, TLorentzVector* b, double weight, TLorentzVector const& kMom, TLorentzVector const& piMom, TVector3 v00);
+void fill(int const kf, TLorentzVector* b, double weight, TLorentzVector const& kMom, TLorentzVector const& piMom, TLorentzVector const& pMom, TVector3 v00);
 void getKinematics(TLorentzVector& b, double const mass);
+float resMass(TLorentzVector const &pMom, TLorentzVector const &kMom, TLorentzVector const &piMom, int decayMode);
 
 void bookObjects();
 void write();
@@ -61,6 +62,7 @@ float const M_KS = 0.49767;
 DecayMode const mDecayMode = kPionKaonProton;
 
 bool const saveNt = false;
+const int decayMode = 0;
 //============== main  program ==================
 void toyMcEffLc(int npart = 100)
 {
@@ -232,16 +234,16 @@ void fill(int const kf, TLorentzVector* b, double weight, TLorentzVector const& 
    float const dcaToPv = dca(rMom.Vect(), v0, vertex);
    float const cosTheta = (v0 - vertex).Unit().Dot(rMom.Vect().Unit());
 
-   bool const isPhft = matchHft(cent, pRMom);
-   bool const isKhft = matchHft(cent, kRMom);
-   bool const isPiHft = matchHft(cent, piRMom);
+   bool const isPhft = matchHft(2,vertex.z(),centrality, pRMom);
+   bool const isKhft = matchHft(1,vertex.z(),centrality, kRMom);
+   bool const isPiHft = matchHft(0,vertex.z(),centrality, piRMom);
 
                        // save
    if (saveNt)
    {
      float arr[100];
      int iArr = 0;
-     arr[iArr++] = cent;
+     arr[iArr++] = centrality;
      arr[iArr++] = vertex.X();
      arr[iArr++] = vertex.Y();
      arr[iArr++] = vertex.Z();
@@ -382,6 +384,34 @@ void fill(int const kf, TLorentzVector* b, double weight, TLorentzVector const& 
    ntTMVA->Fill(TMVA);
 }
 
+//___________
+float resMass(TLorentzVector const &pMom, TLorentzVector const &kMom, TLorentzVector const &piMom, int decayMode)
+{
+  TLorentzVector resMom;
+  switch (decayMode)
+  {
+    case kPionKaonProton:
+      return 0;
+      break;
+    case kKstarProton:
+      resMom = kMom + piMom;
+      return resMom.M();
+      break;
+    case kLambda1520Pion:
+      resMom = pMom + kMom;
+      return resMom.M();
+      break;
+    case kDeltaPPkaon:
+      resMom = pMom + piMom;
+      return resMom.M();
+      break;
+    default:
+      return -1;
+      break;
+  };
+}
+//
+//___________
 void getKinematics(TLorentzVector& b, double const mass)
 {
    float const pt = gRandom->Uniform(momentumRange.first, momentumRange.second);

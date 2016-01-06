@@ -163,6 +163,7 @@ void loadAllDistributions()
 
    fHftRatio1.Close();
    fDca1.Close();
+   fDca2.Close();
 
    cout << " Loading TPC tracking efficiencies " << endl;
 
