@@ -106,7 +106,7 @@ void loadAllDistributions()
    fProtonMomResolution =  (TF1*)f.Get("fKaon")->Clone("fKaon"); // using kaons for now
    f.Close();
 
-  TFile fVertex("Run14_After107_Vz_Cent.root");
+   TFile fVertex("Run14_After107_Vz_Cent.root");
 
    for (int ii = 0; ii < nCent; ++ii)
    {
@@ -118,8 +118,8 @@ void loadAllDistributions()
 
    cout << "Loading input HFT ratios and DCA ..." << endl;
    TFile fHftRatio1("IncludeProton/HFTRatio/HFT_Ratio_VsPt_Centrality_Eta_Phi_Vz_Zdcx.root");
-   TFile fDca1("IncludeProton/DCA/Proton/NoBinWidth_3D_Dca_VsPt_Centrality_Eta_Phi_Vz_Zdcx_proton.root");
-   TFile fDca2("IncludeProton/DCA/PionKaon/NoBinWidth_3D_Dca_VsPt_Centrality_Eta_Phi_Vz_Zdcx.root");
+   TFile fDca1("IncludeProton/DCA/Proton/2DProjection_simCent_NoBinWidth_3D_Dca_VsPt_Centrality_Eta_Phi_Vz_Zdcx_proton.root");
+   TFile fDca2("IncludeProton/DCA/PionKaon/2DProjection_simCent_NoBinWidth_3D_Dca_VsPt_Centrality_Eta_Phi_Vz_Zdcx_v3.root");
 
    for (int iParticle = 0; iParticle < nParticles; ++iParticle)
    {
@@ -150,11 +150,7 @@ void loadAllDistributions()
            for (int iPt = 0; iPt < nPtBins; ++iPt)
            {
 	     TH2D* hist = 0;
-	     char hName[100];
-	     if(iParticle == 2)
-	       hist = (TH1D*)((fDca1.Get(Form("mh1DcaPtCentPartEtaVz_%i_%i_%i_%i_%i", 0, iEta, iVz, iCent, iPt))));
-	     else
-	       hist = (TH1D*)((fDca2.Get(Form("mh1DcaPtCentPartEtaVz_%i_%i_%i_%i_%i", iParticle, iEta, iVz, iCent, iPt))));
+	     hist = (TH1D*)((fDca2.Get(Form("mh1DcaPtCentPartEtaVz_%i_%i_%i_%i_%i", iParticle, iEta, iVz, iCent, iPt))));
 
 	     if(hist)
 	       hist->SetDirectory(0);
