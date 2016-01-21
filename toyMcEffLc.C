@@ -66,9 +66,14 @@ const int decayMode = 0;
 //============== main  program ==================
 void toyMcEffLc(int npart = 100)
 {
+
    gRandom->SetSeed();
    loadAllDistributions();
    bookObjects();
+
+   // char input;
+   // cout << "Pres any key" << endl;
+   // cin >> input;
 
    pydecay = TPythia6Decayer::Instance();
    pydecay->Init();

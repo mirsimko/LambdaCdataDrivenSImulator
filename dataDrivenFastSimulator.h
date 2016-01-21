@@ -123,6 +123,7 @@ void loadAllDistributions()
 
    for (int iParticle = 0; iParticle < nParticles; ++iParticle)
    {
+     cout << "particle" << iParticle << ":" << endl;
      for(int iCent = 0; iCent < nCent; ++iCent)
      {
        // HFT ratio
@@ -148,12 +149,22 @@ void loadAllDistributions()
          {
            for (int iPt = 0; iPt < nPtBins; ++iPt)
            {
+	     TH2D* hist = 0;
+	     char hName[100];
 	     if(iParticle == 2)
-	       h2Dca[iParticle][iEta][iVz][iCent][iPt] = (TH2D*)((fDca1.Get(Form("mh2DcaPtCentPartEtaVz_%i_%i_%i_%i_%i", 0, iEta, iVz, iCent, iPt))));
+	       hist = (TH1D*)((fDca1.Get(Form("mh1DcaPtCentPartEtaVz_%i_%i_%i_%i_%i", 0, iEta, iVz, iCent, iPt))));
 	     else
-	       h2Dca[iParticle][iEta][iVz][iCent][iPt] = (TH2D*)((fDca2.Get(Form("mh2DcaPtCentPartEtaVz_%i_%i_%i_%i_%i", iParticle, iEta, iVz, iCent, iPt))));
+	       hist = (TH1D*)((fDca2.Get(Form("mh1DcaPtCentPartEtaVz_%i_%i_%i_%i_%i", iParticle, iEta, iVz, iCent, iPt))));
 
-             h2Dca[iParticle][iEta][iVz][iCent][iPt]->SetDirectory(0);
+	     if(hist)
+	       hist->SetDirectory(0);
+	     else
+	     {
+	       cerr << "histogram not found" << endl;
+	       cerr << "iParticle:" << iParticle << ", iEta:" << iEta << ", iVz:" << iVz << ", iCent:" << iCent << ", iPt:" << iPt << endl;
+	       throw;
+	     }
+             h2Dca[iParticle][iEta][iVz][iCent][iPt] = hist;
            }
          }
        }
@@ -364,6 +375,11 @@ TVector3 smearPosData(int const iParticleIndex, double const vz, int cent, TLore
 
    if(cent == 8) cent = 7;
 
+   if(!h2Dca[iParticleIndex][iEtaIndex][iVzIndex][cent][iPtIndex])
+   {
+     cerr << "h2Dca[" << iParticleIndex << "][" << iEtaIndex << "][" << iVzIndex << "][" << cent << "][" << iPtIndex << "] not found ... ending program" << endl;
+     throw;
+   }
    h2Dca[iParticleIndex][iEtaIndex][iVzIndex][cent][iPtIndex]->GetRandom2(sigmaPosXY,sigmaPosZ);
    sigmaPosZ *= 1.e4;
    sigmaPosXY *= 1.e4;

@@ -192,7 +192,7 @@ void fill(int const kf, TLorentzVector* b, double weight, TLorentzVector const& 
    arr[iArr++] = v0.Y();
    arr[iArr++] = v0.Z();
 
-  arr[iArr++] = dca12;
+   arr[iArr++] = dca12;
    arr[iArr++] = decayLength;
    arr[iArr++] = dcaD0ToPv;
    arr[iArr++] = cosTheta;
