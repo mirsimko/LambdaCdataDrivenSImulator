@@ -15,6 +15,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <new>
 
 #include "TFile.h"
 #include "TH1F.h"
@@ -190,7 +191,15 @@ void decayAndFill(int const kf, TLorentzVector* b, double const weight, TClonesA
    }
    daughters.Clear();
 
-   fill(kf, b, weight, kMom, piMom, pMom, v00);
+   try
+   {
+     fill(kf, b, weight, kMom, piMom, pMom, v00);
+   }
+   catch(std::bad_alloc &ba)
+   {
+     cerr << "bad_alloc in \"fill\" function: " << ba.what() << endl;
+     throw ba;
+   }
 }
 
 void fill(int const kf, TLorentzVector* b, double weight, TLorentzVector const& kMom, TLorentzVector const& piMom, TLorentzVector const& pMom, TVector3 v00)
@@ -256,149 +265,165 @@ void fill(int const kf, TLorentzVector* b, double weight, TLorentzVector const& 
    bool const isPiHft = matchHft(0,vertex.z(),centrality, piRMom);
 
                        // save
-   if (saveNt)
+
+   try
    {
-     float arr[100];
-     int iArr = 0;
-     arr[iArr++] = centrality;
-     arr[iArr++] = vertex.X();
-     arr[iArr++] = vertex.Y();
-     arr[iArr++] = vertex.Z();
+     if (saveNt)
+     {
+       float arr[100];
+       int iArr = 0;
+       arr[iArr++] = centrality;
+       arr[iArr++] = vertex.X();
+       arr[iArr++] = vertex.Y();
+       arr[iArr++] = vertex.Z();
 
-     arr[iArr++] = kf;
-     arr[iArr++] = b->M();
-     arr[iArr++] = b->Perp();
-     arr[iArr++] = b->PseudoRapidity();
-     arr[iArr++] = b->Rapidity();
-     arr[iArr++] = b->Phi();
-     arr[iArr++] = v00.X();
-     arr[iArr++] = v00.Y();
-     arr[iArr++] = v00.Z();
+       arr[iArr++] = kf;
+       arr[iArr++] = b->M();
+       arr[iArr++] = b->Perp();
+       arr[iArr++] = b->PseudoRapidity();
+       arr[iArr++] = b->Rapidity();
+       arr[iArr++] = b->Phi();
+       arr[iArr++] = v00.X();
+       arr[iArr++] = v00.Y();
+       arr[iArr++] = v00.Z();
 
-     arr[iArr++] = rMom.M();
-     arr[iArr++] = rMom.Perp();
-     arr[iArr++] = rMom.PseudoRapidity();
-     arr[iArr++] = rMom.Rapidity();
-     arr[iArr++] = rMom.Phi();
+       arr[iArr++] = rMom.M();
+       arr[iArr++] = rMom.Perp();
+       arr[iArr++] = rMom.PseudoRapidity();
+       arr[iArr++] = rMom.Rapidity();
+       arr[iArr++] = rMom.Phi();
 
-     arr[iArr++] = dca12;
-     arr[iArr++] = dca23;
-     arr[iArr++] = dca13;
-     arr[iArr++] = decayLength;
-     arr[iArr++] = dcaToPv;
-     arr[iArr++] = cosTheta;
+       arr[iArr++] = dca12;
+       arr[iArr++] = dca23;
+       arr[iArr++] = dca13;
+       arr[iArr++] = decayLength;
+       arr[iArr++] = dcaToPv;
+       arr[iArr++] = cosTheta;
 
-     arr[iArr++] = kMom.M();
-     arr[iArr++] = kMom.Perp();
-     arr[iArr++] = kMom.PseudoRapidity();
-     arr[iArr++] = kMom.Rapidity();
-     arr[iArr++] = kMom.Phi();
-     arr[iArr++] = kDca;
+       arr[iArr++] = kMom.M();
+       arr[iArr++] = kMom.Perp();
+       arr[iArr++] = kMom.PseudoRapidity();
+       arr[iArr++] = kMom.Rapidity();
+       arr[iArr++] = kMom.Phi();
+       arr[iArr++] = kDca;
 
-     arr[iArr++] = kRMom.M();
-     arr[iArr++] = kRMom.Perp();
-     arr[iArr++] = kRMom.PseudoRapidity();
-     arr[iArr++] = kRMom.Rapidity();
-     arr[iArr++] = kRMom.Phi();
-     arr[iArr++] = kRPos.X();
-     arr[iArr++] = kRPos.Y();
-     arr[iArr++] = kRPos.Z();
-     arr[iArr++] = kRDca;
+       arr[iArr++] = kRMom.M();
+       arr[iArr++] = kRMom.Perp();
+       arr[iArr++] = kRMom.PseudoRapidity();
+       arr[iArr++] = kRMom.Rapidity();
+       arr[iArr++] = kRMom.Phi();
+       arr[iArr++] = kRPos.X();
+       arr[iArr++] = kRPos.Y();
+       arr[iArr++] = kRPos.Z();
+       arr[iArr++] = kRDca;
 
-     arr[iArr++] = piMom.M();
-     arr[iArr++] = piMom.Perp();
-     arr[iArr++] = piMom.PseudoRapidity();
-     arr[iArr++] = piMom.Rapidity();
-     arr[iArr++] = piMom.Phi();
-     arr[iArr++] = piDca;
+       arr[iArr++] = piMom.M();
+       arr[iArr++] = piMom.Perp();
+       arr[iArr++] = piMom.PseudoRapidity();
+       arr[iArr++] = piMom.Rapidity();
+       arr[iArr++] = piMom.Phi();
+       arr[iArr++] = piDca;
 
-     arr[iArr++] = piRMom.M();
-     arr[iArr++] = piRMom.Perp();
-     arr[iArr++] = piRMom.PseudoRapidity();
-     arr[iArr++] = piRMom.Rapidity();
-     arr[iArr++] = piRMom.Phi();
-     arr[iArr++] = piRPos.X();
-     arr[iArr++] = piRPos.Y();
-     arr[iArr++] = piRPos.Z();
-     arr[iArr++] = piRDca;
+       arr[iArr++] = piRMom.M();
+       arr[iArr++] = piRMom.Perp();
+       arr[iArr++] = piRMom.PseudoRapidity();
+       arr[iArr++] = piRMom.Rapidity();
+       arr[iArr++] = piRMom.Phi();
+       arr[iArr++] = piRPos.X();
+       arr[iArr++] = piRPos.Y();
+       arr[iArr++] = piRPos.Z();
+       arr[iArr++] = piRDca;
 
-     arr[iArr++] = pMom.M();
-     arr[iArr++] = pMom.Perp();
-     arr[iArr++] = pMom.PseudoRapidity();
-     arr[iArr++] = pMom.Rapidity();
-     arr[iArr++] = pMom.Phi();
-     arr[iArr++] = pDca;
+       arr[iArr++] = pMom.M();
+       arr[iArr++] = pMom.Perp();
+       arr[iArr++] = pMom.PseudoRapidity();
+       arr[iArr++] = pMom.Rapidity();
+       arr[iArr++] = pMom.Phi();
+       arr[iArr++] = pDca;
 
-     arr[iArr++] = pRMom.M();
-     arr[iArr++] = pRMom.Perp();
-     arr[iArr++] = pRMom.PseudoRapidity();
-     arr[iArr++] = pRMom.Rapidity();
-     arr[iArr++] = pRMom.Phi();
-     arr[iArr++] = pRPos.X();
-     arr[iArr++] = pRPos.Y();
-     arr[iArr++] = pRPos.Z();
-     arr[iArr++] = pRDca;
+       arr[iArr++] = pRMom.M();
+       arr[iArr++] = pRMom.Perp();
+       arr[iArr++] = pRMom.PseudoRapidity();
+       arr[iArr++] = pRMom.Rapidity();
+       arr[iArr++] = pRMom.Phi();
+       arr[iArr++] = pRPos.X();
+       arr[iArr++] = pRPos.Y();
+       arr[iArr++] = pRPos.Z();
+       arr[iArr++] = pRDca;
 
-     arr[iArr++] = isKhft;
-     arr[iArr++] = isPiHft;
-     arr[iArr++] = isPhft;
+       arr[iArr++] = isKhft;
+       arr[iArr++] = isPiHft;
+       arr[iArr++] = isPhft;
 
-     arr[iArr++] = resMass(pMom, kMom, piMom, decayMode);
-     arr[iArr++] = resMass(pRMom, kRMom, piRMom, decayMode);
+       arr[iArr++] = resMass(pMom, kMom, piMom, decayMode);
+       arr[iArr++] = resMass(pRMom, kRMom, piRMom, decayMode);
 
-     arr[iArr++] = vDistMax;
-     arr[iArr++] = vDist1;
-     arr[iArr++] = vDist2;
-     arr[iArr++] = vDist3;
+       arr[iArr++] = vDistMax;
+       arr[iArr++] = vDist1;
+       arr[iArr++] = vDist2;
+       arr[iArr++] = vDist3;
 
-     nt->Fill(arr);
-   } // if (saveNt)
+       nt->Fill(arr);
+     } // if (saveNt)
+   }
+   catch(std::bad_alloc &ba)
+   {
+     cerr << "bad_alloc in saving \"nt\": " << ba.what() << endl;
+     throw ba;
+   }
+   try	
+   {
+     // __________________________________________
+     // using cuts
+     // __________________________________________
+     bool const PtCut = pRMom.Perp() > 0.3 && kRMom.Perp() > 0.3 && piRMom.Perp() > 0.3;
+     bool const dcaCut = dca12 < 200 && dca23 < 200 && dca13 < 200;
+     bool const dLengthCut = decayLength > 30;
+     bool const cosThetaCut = cosTheta > 0.98;
+     bool const HftCut = isPhft && isKhft && isPiHft;
+     bool const EtaCut = TMath::Abs(kRMom.PseudoRapidity()) < 1. && TMath::Abs(pRMom.PseudoRapidity()) < 1. && TMath::Abs(piRMom.PseudoRapidity()) < 1.;
 
-   // __________________________________________
-   // using cuts
-   // __________________________________________
-   bool const PtCut = pRMom.Perp() > 0.3 && kRMom.Perp() > 0.3 && piRMom.Perp() > 0.3;
-   bool const dcaCut = dca12 < 200 && dca23 < 200 && dca13 < 200;
-   bool const dLengthCut = decayLength > 30;
-   bool const cosThetaCut = cosTheta > 0.98;
-   bool const HftCut = isPhft && isKhft && isPiHft;
-   bool const EtaCut = TMath::Abs(kRMom.PseudoRapidity()) < 1. && TMath::Abs(pRMom.PseudoRapidity()) < 1. && TMath::Abs(piRMom.PseudoRapidity()) < 1.;
-   
-   if ( !( PtCut && dcaCut && dLengthCut && cosThetaCut && HftCut && EtaCut ) )
-     return;
+     if ( !( PtCut && dcaCut && dLengthCut && cosThetaCut && HftCut && EtaCut ) )
+       return;
 
-   // __________________________________________
-   // end of cuts
-   // filling TMVA histograms
-   const float umToCm = 0.0001;
+     // __________________________________________
+     // end of cuts
+     // filling TMVA histograms
+     const float umToCm = 0.0001;
 
-   float TMVA[100];
-   int iTMVA = 0;
+     float TMVA[100];
+     int iTMVA = 0;
 
-   TMVA[iTMVA++] = rMom.M();
-   TMVA[iTMVA++] = rMom.Perp();
-   TMVA[iTMVA++] = 1;
-   TMVA[iTMVA++] = rMom.Phi();
-   TMVA[iTMVA++] = rMom.PseudoRapidity();
+     TMVA[iTMVA++] = rMom.M();
+     TMVA[iTMVA++] = rMom.Perp();
+     TMVA[iTMVA++] = 1;
+     TMVA[iTMVA++] = rMom.Phi();
+     TMVA[iTMVA++] = rMom.PseudoRapidity();
 
-   TMVA[iTMVA++] = dca12*umToCm;
-   TMVA[iTMVA++] = dca23*umToCm;
-   TMVA[iTMVA++] = dca13*umToCm;
+     TMVA[iTMVA++] = dca12*umToCm;
+     TMVA[iTMVA++] = dca23*umToCm;
+     TMVA[iTMVA++] = dca13*umToCm;
 
-   TMVA[iTMVA++] = cosTheta;
-   TMVA[iTMVA++] = decayLength*umToCm;
+     TMVA[iTMVA++] = cosTheta;
+     TMVA[iTMVA++] = decayLength*umToCm;
 
-   TMVA[iTMVA++] = kRMom.Perp();
-   TMVA[iTMVA++] = pRMom.Perp();
-   TMVA[iTMVA++] = piRMom.Perp();
+     TMVA[iTMVA++] = kRMom.Perp();
+     TMVA[iTMVA++] = pRMom.Perp();
+     TMVA[iTMVA++] = piRMom.Perp();
 
-   TMVA[iTMVA++] = kRDca*umToCm;
-   TMVA[iTMVA++] = pRDca*umToCm;
-   TMVA[iTMVA++] = piRDca*umToCm;
+     TMVA[iTMVA++] = kRDca*umToCm;
+     TMVA[iTMVA++] = pRDca*umToCm;
+     TMVA[iTMVA++] = piRDca*umToCm;
 
-   TMVA[iTMVA++] = vDistMax*umToCm;
+     TMVA[iTMVA++] = vDistMax*umToCm;
 
-   ntTMVA->Fill(TMVA);
+     ntTMVA->Fill(TMVA);
+   }
+   catch(std::bad_alloc &ba)
+   {
+     cerr << "bad_alloc in saving \"nt\": " << ba.what() << endl;
+     throw ba;
+   }
 }
 
 //___________
