@@ -150,7 +150,10 @@ void loadAllDistributions()
            for (int iPt = 0; iPt < nPtBins; ++iPt)
            {
 	     TH2D* hist = 0;
-	     hist = (TH1D*)((fDca2.Get(Form("mh1DcaPtCentPartEtaVz_%i_%i_%i_%i_%i", iParticle, iEta, iVz, iCent, iPt))));
+	     if(iParticle == 2)
+	       hist = (TH2D*)((fDca1.Get(Form("mh2DcaPtCentPartEtaVz_%i_%i_%i_%i_%i", iParticle, iEta, iVz, iCent, iPt))));
+	     else
+	       hist = (TH2D*)((fDca2.Get(Form("mh2DcaPtCentPartEtaVz_%i_%i_%i_%i_%i", iParticle, iEta, iVz, iCent, iPt))));
 
 	     if(hist)
 	       hist->SetDirectory(0);

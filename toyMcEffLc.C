@@ -54,30 +54,39 @@ TFile* result;
 TF1* fWeightFunction = NULL;
 
 string outFileName = "KS.toyMc.root";
-std::pair<int, int> const decayChannels(613,614);
+std::pair<int, int> const decayChannels(4277, 4354); // first and last Lc decay channel number
 std::pair<float, float> const momentumRange(0, 12);
 
 float const acceptanceRapidity = 1.0;
 float const M_KS = 0.49767;
 DecayMode const mDecayMode = kPionKaonProton;
 
-bool const saveNt = false;
+bool const saveNt = true;
 const int decayMode = 0;
 //============== main  program ==================
 void toyMcEffLc(int npart = 100)
 {
+   // cout << "Mass = " << M_LAMBDA_C_PLUS << endl;
 
    gRandom->SetSeed();
-   loadAllDistributions();
-   bookObjects();
+
+   pydecay = TPythia6Decayer::Instance();
+   // Reading new decay channels
+   pydecay-> SetDecayTableFile("AddedDecays.list");
+   pydecay-> ReadDecayTable();
+
+   pydecay->Init();
 
    // char input;
    // cout << "Pres any key" << endl;
    // cin >> input;
+   // TPythia6::Instance()->Pylist(12); // this is for writing the Decay table to std_out
 
-   pydecay = TPythia6Decayer::Instance();
-   pydecay->Init();
+   loadAllDistributions();
+   bookObjects();
 
+   
+   // selecting decay channels
    float branchingRatio = 0;
    switch(mDecayMode)
    {
@@ -119,8 +128,8 @@ void toyMcEffLc(int npart = 100)
    TClonesArray ptl("TParticle", 10);
    for (int ipart = 0; ipart < npart; ipart++)
    {
-      if (!(ipart % 100000))
-         cout << "____________ ipart = " << ipart << " ________________" << endl;
+      if (!(ipart % 1))
+         cout << "____________ 2*ipart = " << 2*ipart << " ________________" << endl;
 
       getKinematics(*b_d, M_LAMBDA_C_PLUS);
 
@@ -154,6 +163,7 @@ void decayAndFill(int const kf, TLorentzVector* b, double const weight, TClonesA
    TVector3 v00;
 
    int nTrk = daughters.GetEntriesFast();
+   // cout << "Number of daughters: " <<  nTrk << endl;
    for (int iTrk = 0; iTrk < nTrk; ++iTrk)
    {
       TParticle* ptl0 = (TParticle*)daughters.At(iTrk);
@@ -195,9 +205,11 @@ void fill(int const kf, TLorentzVector* b, double weight, TLorentzVector const& 
    v00 += vertex;
 
    // smear momentum
+   // cout << "piPt = " << piMom.Perp() << ", kPt = " << kMom.Perp() << ", pPt = "<< pMom.Perp() << endl;
    TLorentzVector const piRMom = smearMom(0, piMom);
    TLorentzVector const kRMom = smearMom(1, kMom);
    TLorentzVector const pRMom = smearMom(2, pMom);
+   // cout << "piRPt = " << piRMom.Perp() << ", kRPt = " << kRMom.Perp() << ", pRPt = "<< pRMom.Perp() << endl;
 
    // smear position
    TVector3 const piRPos = smearPosData(0, vertex.z(), centrality, piRMom, v00);
@@ -420,6 +432,7 @@ float resMass(TLorentzVector const &pMom, TLorentzVector const &kMom, TLorentzVe
 void getKinematics(TLorentzVector& b, double const mass)
 {
    float const pt = gRandom->Uniform(momentumRange.first, momentumRange.second);
+   //cout << "Momentum: " << pt << endl;
    float const y = gRandom->Uniform(-acceptanceRapidity, acceptanceRapidity);
    float const phi = TMath::TwoPi() * gRandom->Rndm();
 
@@ -452,7 +465,7 @@ void bookObjects()
 				      "cosPntAngle:dLength:" // cosTheta and decay Length
 				      "p1pt:p2pt:p3pt:"
 				      "p1Dca:p2Dca:p3Dca:" // daughters (K, p, pi)
-				      "maxVertexDist");
+				      "maxVertexDist",BufSize);
 
 }
 //___________
