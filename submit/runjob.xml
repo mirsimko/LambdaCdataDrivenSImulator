@@ -1,25 +1,22 @@
 <?xml version="1.0" encoding="utf-8" ?> 
 <job >
   <command>
-    echo creating environment
     set homeDir=/global/project/projectdirs/star/pwg/starhf/simkomir/LambdaC/DataDrivenFastSim
-    cp ${homeDir}/IncludeProton.tar                      .
-    cp ${homeDir}/Eff_*.root                             .
-    cp toyMcEffLc.C                                      .
-    cp dataDrivenFastSimulator.h                         .
-    cp AddedDecays.list                                  .
-    cp Run14_After107_Vz_Cent.root                       .
-    cp momentum_resolution.root                          .
-    cp HFT_Ratio_VsPt_Centrality_Eta_Phi_Vz_Zdcx_v4.root .
-    echo extracting IncludeProton.tar
+    cp ${homeDir}/IncludeProton.tar		                    .
+    cp ${homeDir}/Eff_*.root           		                    .
+    cp ${homeDir}/toyMcEffLc.C                                      .
+    cp ${homeDir}/dataDrivenFastSimulator.h                         .
+    cp ${homeDir}/runToyMC.sh		                            .
+    cp ${homeDir}/AddedDecays.list                                  .
+    cp ${homeDir}/Run14_After107_Vz_Cent.root                       .
+    cp ${homeDir}/momentum_resolution.root                          .
+    cp ${homeDir}/HFT_Ratio_VsPt_Centrality_Eta_Phi_Vz_Zdcx_v4.root .
     tar -xzf IncludeProton.tar
     
-    echo Running simulation
     starver SL15c
     # kKstarProton=0, kLambda1520Pion=1, kDeltaPPkaon=2, kPionKaonProton=3, kLambdaPion=4, kKshortProton=5
     ./runToyMC.sh 1000000
 
-    echo Moving results
     tar -czf Lc.toyMc.root.tar Lc.toyMc.root
     cp Lc.toyMc.root.tar ${homeDir}
     tar -xzf ${homeDir}/Lc.toyMc.root.tar
