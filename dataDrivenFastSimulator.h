@@ -43,6 +43,8 @@ int getEtaIndex(double);
 int getVzIndex(double);
 int getPhiIndex(double);
 
+inline int getIndex(int iParticle, int iEta, int iVz, int iCent, int iPt);
+
 int getPtIndexHftRatio(double);
 int getEtaIndexHftRatio(double);
 int getVzIndexHftRatio(double);
@@ -88,7 +90,7 @@ TH1D* h1Vz[nCent];
 TH1D* hHftRatio1[nParticles][nEtasHftRatio][nVzsHftRatio][nPhisHftRatio][nCent];
 
 int const nCentDca = 8;
-TH2D* h2Dca[nParticles][nEtas][nVzs][nCentDca][nPtBins];
+TH2D* h2Dca[nParticles*nEtas*nVzs*nCentDca*nPtBins];
 
 TH1D* hTpcPiPlus[nCent];
 TH1D* hTpcPiMinus[nCent];
@@ -167,7 +169,8 @@ void loadAllDistributions()
 	       cerr << "iParticle:" << iParticle << ", iEta:" << iEta << ", iVz:" << iVz << ", iCent:" << iCent << ", iPt:" << iPt << endl;
 	       throw;
 	     }
-             h2Dca[iParticle][iEta][iVz][iCent][iPt] = hist;
+
+             h2Dca[getIndex(iParticle,iEta,iVz,iCent,iPt)] = hist;
            }
          }
        }
@@ -384,7 +387,7 @@ TVector3 smearPosData(int const iParticleIndex, double const vz, int cent, TLore
 
    if(cent == 8) cent = 7;
 
-   if(!h2Dca[iParticleIndex][iEtaIndex][iVzIndex][cent][iPtIndex])
+   if(!h2Dca[getIndex(iParticleIndex,iEtaIndex,iVzIndex,cent,iPtIndex)])
    {
      cerr << "smearPosData: 2Dca[" << iParticleIndex << "][" << iEtaIndex << "][" << iVzIndex << "][" << cent << "][" << iPtIndex << "] not found ... ending program" << endl;
      throw;
@@ -392,7 +395,7 @@ TVector3 smearPosData(int const iParticleIndex, double const vz, int cent, TLore
    TH2D *hist;
    try
    {
-     hist = h2Dca[iParticleIndex][iEtaIndex][iVzIndex][cent][iPtIndex];
+     hist = h2Dca[getIndex(iParticleIndex,iEtaIndex,iVzIndex,cent,iPtIndex)];
    }
    catch(std::bad_alloc &ba)
    {
@@ -469,4 +472,9 @@ bool matchHft(int const iParticleIndex, double const vz, int const cent, TLorent
 
    int const bin = hHftRatio1[iParticleIndex][iEtaIndex][iVzIndex][iPhiIndex][cent]->FindBin(mom.Perp());
    return gRandom->Rndm() < hHftRatio1[iParticleIndex][iEtaIndex][iVzIndex][iPhiIndex][cent]->GetBinContent(bin);
+}
+
+inline int getIndex(int iParticle, int iEta, int iVz, int iCent, int iPt)
+{
+  return iParticle*nEtas*nVzs*nCentDca*nPtBins + iEta*nVzs*nCentDca*nPtBins + iVz*nCentDca*nPtBins + iCent*nPtBins + iPt;
 }
