@@ -12,11 +12,15 @@
  * *********************************************************************
 */
 
+#include <new>
+#include <iostream>
 #include "TFile.h"
 #include "TH1F.h"
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TH3F.h"
+
+using namespace std;
 
 enum DecayMode {kKstarProton, kLambda1520Pion, kDeltaPPkaon, kPionKaonProton, kLambdaPion, kKshortProton};
 
@@ -365,9 +369,15 @@ TVector3 smearPos(TLorentzVector const& mom, TLorentzVector const& rMom, TVector
 
 TVector3 smearPosData(int const iParticleIndex, double const vz, int cent, TLorentzVector const& rMom, TVector3 const& pos)
 {
+  try
+  {
    int const iEtaIndex = getEtaIndex(rMom.PseudoRapidity());
    int const iVzIndex = getVzIndex(vz);
    int const iPtIndex = getPtIndex(rMom.Perp());
+   // cout << "iEtaIndex = " << iEtaIndex << endl;
+   // cout << "iVzIndex = " << iVzIndex << endl;
+   // cout << "iPtIndex = " << iPtIndex << endl;
+   // cout << "cent = " << cent << endl;
 
    double sigmaPosZ = 0;
    double sigmaPosXY = 0;
@@ -376,10 +386,30 @@ TVector3 smearPosData(int const iParticleIndex, double const vz, int cent, TLore
 
    if(!h2Dca[iParticleIndex][iEtaIndex][iVzIndex][cent][iPtIndex])
    {
-     cerr << "h2Dca[" << iParticleIndex << "][" << iEtaIndex << "][" << iVzIndex << "][" << cent << "][" << iPtIndex << "] not found ... ending program" << endl;
+     cerr << "smearPosData: 2Dca[" << iParticleIndex << "][" << iEtaIndex << "][" << iVzIndex << "][" << cent << "][" << iPtIndex << "] not found ... ending program" << endl;
      throw;
    }
-   h2Dca[iParticleIndex][iEtaIndex][iVzIndex][cent][iPtIndex]->GetRandom2(sigmaPosXY,sigmaPosZ);
+   TH2D *hist;
+   try
+   {
+     hist = h2Dca[iParticleIndex][iEtaIndex][iVzIndex][cent][iPtIndex];
+   }
+   catch(std::bad_alloc &ba)
+   {
+     cerr << "smearPosData: bad_alloc when reading \"h2Dca\": " << ba.what() << endl;
+     throw ba;
+   }
+
+   try
+   {
+     hist->GetRandom2(sigmaPosXY,sigmaPosZ);
+   }
+   catch(std::bad_alloc &ba)
+   {
+     cerr << "smearPosData: bad_alloc when \"GetRandom2\" is called: " << ba.what() << endl;
+     throw ba;
+   }
+
    sigmaPosZ *= 1.e4;
    sigmaPosXY *= 1.e4;
 
@@ -389,6 +419,12 @@ TVector3 smearPosData(int const iParticleIndex, double const vz, int cent, TLore
    newPos -= momPerp.Unit() * sigmaPosXY;
 
    return TVector3(newPos.X(), newPos.Y(), pos.Z() + sigmaPosZ);
+  }
+  catch(std::bad_alloc &ba)
+  {
+    cerr << "bad_alloc in \"smearPosData\" function: " << ba.what() << endl;
+    throw ba;
+  }
 }
 
 TVector3 getVertex(int const centrality)

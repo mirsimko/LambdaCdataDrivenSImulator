@@ -54,7 +54,7 @@ TFile* result;
 
 TF1* fWeightFunction = NULL;
 
-string outFileName = "KS.toyMc.root";
+string outFileName = "Lc.toyMc.root";
 std::pair<int, int> const decayChannels(4277, 4354); // first and last Lc decay channel number
 std::pair<float, float> const momentumRange(0, 12);
 
@@ -129,7 +129,7 @@ void toyMcEffLc(int npart = 100)
    TClonesArray ptl("TParticle", 10);
    for (int ipart = 0; ipart < npart; ipart++)
    {
-      if (!(ipart % 1))
+      if (!(ipart % 500))
          cout << "____________ 2*ipart = " << 2*ipart << " ________________" << endl;
 
       getKinematics(*b_d, M_LAMBDA_C_PLUS);
@@ -140,7 +140,9 @@ void toyMcEffLc(int npart = 100)
       if (ipart%1000 == 1) // save
       {
 	nt->AutoSave("SaveSelf");
+	nt->FlushBaskets();
 	ntTMVA->AutoSave("SaveSelf");
+	ntTMVA->FlushBaskets();
       }
    }
 
@@ -221,13 +223,18 @@ void fill(int const kf, TLorentzVector* b, double weight, TLorentzVector const& 
    // cout << "piRPt = " << piRMom.Perp() << ", kRPt = " << kRMom.Perp() << ", pRPt = "<< pRMom.Perp() << endl;
 
    // smear position
+   // cout << "Smearing position ..." << endl;
+   // cout << "Pion" << endl;
    TVector3 const piRPos = smearPosData(0, vertex.z(), centrality, piRMom, v00);
+   // cout << "Kaon" << endl;
    TVector3 const kRPos = smearPosData(1, vertex.z(), centrality, kRMom, v00);
+   // cout << "Proton" << endl;
    TVector3 const pRPos = smearPosData(2, vertex.z(), centrality, pRMom, v00);
    // TVector3 const kRPos = smearPos(kMom, kRMom, v00);
    // TVector3 const pRPos = smearPos(pMom, pRMom, v00);
 
    // reconstruct
+   // cout << "Reconstructing..." << endl;
    TLorentzVector const rMom = pRMom + piRMom + kRMom;
    float const piDca = dca(piMom.Vect(), v00, vertex);
    float const kDca = dca(kMom.Vect(), v00, vertex);
@@ -236,6 +243,7 @@ void fill(int const kf, TLorentzVector* b, double weight, TLorentzVector const& 
    float const kRDca = dca(kRMom.Vect(), kRPos, vertex);
    float const pRDca = dca(pRMom.Vect(), pRPos, vertex);
 
+   // cout << "Calculating smeared vertex..." << endl;
    // smeared decay vertex
    TVector3 v0;
    // vertices between pairs
@@ -243,6 +251,7 @@ void fill(int const kf, TLorentzVector* b, double weight, TLorentzVector const& 
    TVector3 v023;
    TVector3 v013;
 
+   // cout << "Calculating DCAs..." << endl;
    float const dca12 = dca1To2(kRMom.Vect(), kRPos, piRMom.Vect(), piRPos, v012);
    float const dca23 = dca1To2(piRMom.Vect(), piRPos, pRMom.Vect(), pRPos, v023);
    float const dca13 = dca1To2(kRMom.Vect(), kRPos, pRMom.Vect(), pRPos, v013);
@@ -260,12 +269,15 @@ void fill(int const kf, TLorentzVector* b, double weight, TLorentzVector const& 
    float const dcaToPv = dca(rMom.Vect(), v0, vertex);
    float const cosTheta = (v0 - vertex).Unit().Dot(rMom.Vect().Unit());
 
+   // cout << "is HFT track?" << endl;
    bool const isPhft = matchHft(2,vertex.z(),centrality, pRMom);
    bool const isKhft = matchHft(1,vertex.z(),centrality, kRMom);
    bool const isPiHft = matchHft(0,vertex.z(),centrality, piRMom);
 
                        // save
 
+   // cout << "saving..." << endl;
+   // error block
    try
    {
      if (saveNt)
@@ -371,6 +383,8 @@ void fill(int const kf, TLorentzVector* b, double weight, TLorentzVector const& 
      cerr << "bad_alloc in saving \"nt\": " << ba.what() << endl;
      throw ba;
    }
+   
+   // error block
    try	
    {
      // __________________________________________
@@ -421,7 +435,7 @@ void fill(int const kf, TLorentzVector* b, double weight, TLorentzVector const& 
    }
    catch(std::bad_alloc &ba)
    {
-     cerr << "bad_alloc in saving \"nt\": " << ba.what() << endl;
+     cerr << "bad_alloc in saving \"ntTMVA\": " << ba.what() << endl;
      throw ba;
    }
 }
@@ -498,5 +512,6 @@ void write()
 {
    result->cd();
    nt->Write();
+   ntTMVA->Write();
    result->Close();
 }
