@@ -140,13 +140,14 @@ void toyMcEffLc(int npart = 100)
       if (ipart%1000 == 1) // save
       {
 	nt->AutoSave("SaveSelf");
-	nt->FlushBaskets();
+	// nt->FlushBaskets();
 	ntTMVA->AutoSave("SaveSelf");
-	ntTMVA->FlushBaskets();
+	// ntTMVA->FlushBaskets();
       }
    }
 
    write();
+   delete b_d;
 }
 
 void setDecayChannels(int const mdme)
@@ -504,7 +505,7 @@ void bookObjects()
 				      "cosPntAngle:dLength:" // cosTheta and decay Length
 				      "p1pt:p2pt:p3pt:"
 				      "p1Dca:p2Dca:p3Dca:" // daughters (K, p, pi)
-				      "maxVertexDist",BufSize);
+				      "maxVertexDist", BufSize);
 
 }
 //___________
