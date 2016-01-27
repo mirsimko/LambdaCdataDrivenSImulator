@@ -49,7 +49,7 @@ void bookObjects();
 void write();
 TPythia6Decayer* pydecay;
 TNtuple* nt;
-TNtuple* ntTMVA;
+// TNtuple* ntTMVA;
 TFile* result;
 
 TF1* fWeightFunction = NULL;
@@ -141,7 +141,7 @@ void toyMcEffLc(int npart = 100)
       {
 	nt->AutoSave("SaveSelf");
 	// nt->FlushBaskets();
-	ntTMVA->AutoSave("SaveSelf");
+	// ntTMVA->AutoSave("SaveSelf");
 	// ntTMVA->FlushBaskets();
       }
    }
@@ -277,7 +277,7 @@ void fill(int const kf, TLorentzVector* b, double weight, TLorentzVector const& 
 
                        // save
 
-   // cout << "saving..." << endl;
+   cout << "saving..." << endl;
    // error block
    try
    {
@@ -385,60 +385,60 @@ void fill(int const kf, TLorentzVector* b, double weight, TLorentzVector const& 
      throw ba;
    }
    
-   // error block
-   try	
-   {
-     // __________________________________________
-     // using cuts
-     // __________________________________________
-     bool const PtCut = pRMom.Perp() > 0.3 && kRMom.Perp() > 0.3 && piRMom.Perp() > 0.3;
-     bool const dcaCut = dca12 < 200 && dca23 < 200 && dca13 < 200;
-     bool const dLengthCut = decayLength > 30;
-     bool const cosThetaCut = cosTheta > 0.98;
-     bool const HftCut = isPhft && isKhft && isPiHft;
-     bool const EtaCut = TMath::Abs(kRMom.PseudoRapidity()) < 1. && TMath::Abs(pRMom.PseudoRapidity()) < 1. && TMath::Abs(piRMom.PseudoRapidity()) < 1.;
+   // // error block
+   // try	
+   // {
+   //   // __________________________________________
+   //   // using cuts
+   //   // __________________________________________
+   //   bool const PtCut = pRMom.Perp() > 0.3 && kRMom.Perp() > 0.3 && piRMom.Perp() > 0.3;
+   //   bool const dcaCut = dca12 < 200 && dca23 < 200 && dca13 < 200;
+   //   bool const dLengthCut = decayLength > 30;
+   //   bool const cosThetaCut = cosTheta > 0.98;
+   //   bool const HftCut = isPhft && isKhft && isPiHft;
+   //   bool const EtaCut = TMath::Abs(kRMom.PseudoRapidity()) < 1. && TMath::Abs(pRMom.PseudoRapidity()) < 1. && TMath::Abs(piRMom.PseudoRapidity()) < 1.;
 
-     if ( !( PtCut && dcaCut && dLengthCut && cosThetaCut && HftCut && EtaCut ) )
-       return;
+   //   if ( !( PtCut && dcaCut && dLengthCut && cosThetaCut && HftCut && EtaCut ) )
+   //     return;
 
-     // __________________________________________
-     // end of cuts
-     // filling TMVA histograms
-     const float umToCm = 0.0001;
+   //   // __________________________________________
+   //   // end of cuts
+   //   // filling TMVA histograms
+   //   const float umToCm = 0.0001;
 
-     float TMVA[100];
-     int iTMVA = 0;
+   //   float TMVA[100];
+   //   int iTMVA = 0;
 
-     TMVA[iTMVA++] = rMom.M();
-     TMVA[iTMVA++] = rMom.Perp();
-     TMVA[iTMVA++] = 1;
-     TMVA[iTMVA++] = rMom.Phi();
-     TMVA[iTMVA++] = rMom.PseudoRapidity();
+   //   TMVA[iTMVA++] = rMom.M();
+   //   TMVA[iTMVA++] = rMom.Perp();
+   //   TMVA[iTMVA++] = 1;
+   //   TMVA[iTMVA++] = rMom.Phi();
+   //   TMVA[iTMVA++] = rMom.PseudoRapidity();
 
-     TMVA[iTMVA++] = dca12*umToCm;
-     TMVA[iTMVA++] = dca23*umToCm;
-     TMVA[iTMVA++] = dca13*umToCm;
+   //   TMVA[iTMVA++] = dca12*umToCm;
+   //   TMVA[iTMVA++] = dca23*umToCm;
+   //   TMVA[iTMVA++] = dca13*umToCm;
 
-     TMVA[iTMVA++] = cosTheta;
-     TMVA[iTMVA++] = decayLength*umToCm;
+   //   TMVA[iTMVA++] = cosTheta;
+   //   TMVA[iTMVA++] = decayLength*umToCm;
 
-     TMVA[iTMVA++] = kRMom.Perp();
-     TMVA[iTMVA++] = pRMom.Perp();
-     TMVA[iTMVA++] = piRMom.Perp();
+   //   TMVA[iTMVA++] = kRMom.Perp();
+   //   TMVA[iTMVA++] = pRMom.Perp();
+   //   TMVA[iTMVA++] = piRMom.Perp();
 
-     TMVA[iTMVA++] = kRDca*umToCm;
-     TMVA[iTMVA++] = pRDca*umToCm;
-     TMVA[iTMVA++] = piRDca*umToCm;
+   //   TMVA[iTMVA++] = kRDca*umToCm;
+   //   TMVA[iTMVA++] = pRDca*umToCm;
+   //   TMVA[iTMVA++] = piRDca*umToCm;
 
-     TMVA[iTMVA++] = vDistMax*umToCm;
+   //   TMVA[iTMVA++] = vDistMax*umToCm;
 
-     ntTMVA->Fill(TMVA);
-   }
-   catch(std::bad_alloc &ba)
-   {
-     cerr << "bad_alloc in saving \"ntTMVA\": " << ba.what() << endl;
-     throw ba;
-   }
+   //   ntTMVA->Fill(TMVA);
+   // }
+   // catch(std::bad_alloc &ba)
+   // {
+   //   cerr << "bad_alloc in saving \"ntTMVA\": " << ba.what() << endl;
+   //   throw ba;
+   // }
 }
 
 //___________
@@ -500,12 +500,12 @@ void bookObjects()
                     "p2RM:p2RPt:p2REta:p2RY:p2RPhi:p2RVx:p2RVy:p2RVz:p2RDca:p2Tpc:" // Rc Pi -
                     "p1Hft:p2Hft",BufSize);
 
-   ntTMVA = new TNtuple("ntTMVA", "", "m:pt:charges:phi:eta:" // basic properties of Lambda_c
-				      "dcaDaugthers31:dcaDaugthers23:dcaDaugthers12:" // dca daughters (pi-K, pi-p, p-K)
-				      "cosPntAngle:dLength:" // cosTheta and decay Length
-				      "p1pt:p2pt:p3pt:"
-				      "p1Dca:p2Dca:p3Dca:" // daughters (K, p, pi)
-				      "maxVertexDist", BufSize);
+//    ntTMVA = new TNtuple("ntTMVA", "", "m:pt:charges:phi:eta:" // basic properties of Lambda_c
+// 				      "dcaDaugthers31:dcaDaugthers23:dcaDaugthers12:" // dca daughters (pi-K, pi-p, p-K)
+// 				      "cosPntAngle:dLength:" // cosTheta and decay Length
+// 				      "p1pt:p2pt:p3pt:"
+// 				      "p1Dca:p2Dca:p3Dca:" // daughters (K, p, pi)
+// 				      "maxVertexDist", BufSize);
 
 }
 //___________
@@ -513,6 +513,6 @@ void write()
 {
    result->cd();
    nt->Write();
-   ntTMVA->Write();
+   // ntTMVA->Write();
    result->Close();
 }
