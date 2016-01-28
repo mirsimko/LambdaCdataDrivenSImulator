@@ -55,6 +55,9 @@ TF1* fPionMomResolution = NULL;
 TF1* fProtonMomResolution = NULL;
 const Int_t nParticles = 3;
 const Int_t nCent = 9;
+int beginCentrality = 0;
+int endCentrality = 8;
+int totalNBin = 0;
 
 // HFT ratio binning
 const Int_t nEtasHftRatio = 10;
@@ -103,8 +106,11 @@ float const gVzCut = 6.0e4;
 float const sigmaPos0 = 15.2;
 float const pxlLayer1Thickness = 0.00486;
 
-void loadAllDistributions()
+void loadAllDistributions(int startCent = 0, int endCent = 8)
 {
+   beginCentrality = startCent;
+   endCentrality = endCent;
+   cout << "Running for centralities from " << beginCentrality << " to " << endCentrality << endl;
    cout << "Loading input momentum resolution ..." << endl;
    TFile f("momentum_resolution.root");
    fPionMomResolution = (TF1*)f.Get("fPion")->Clone("fPion");
@@ -146,7 +152,7 @@ void loadAllDistributions()
        }
      }
 
-     for(int iCent = 0; iCent < nCentDca; ++iCent)
+     for(int iCent = beginCentrality; iCent < nCentDca && iCent <= endCentrality; ++iCent)
      {
        // DCA
        for (int iEta = 0; iEta < nEtas; ++iEta)
@@ -189,7 +195,7 @@ void loadAllDistributions()
    TFile fTpcKPlus("Eff_KaonPlus_embedding_v2.root");
    TFile fTpcKMinus("Eff_KaonMinus_embedding_v2.root");
 
-   for(int iCent = 0; iCent< nCent; ++iCent)
+   for(int iCent = beginCentrality; iCent< nCent && iCent <= endCentrality; ++iCent)
    {
      hTpcPiPlus[iCent] = (TH1D*)fTpcPiPlus.Get(Form("h1Ratiocent_%i",iCent));
      hTpcPiPlus[iCent]->SetDirectory(0);

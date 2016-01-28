@@ -1,12 +1,13 @@
 /* *********************************************************************
- *  ROOT macro - Toy Monte Carlo Simulation for D0 decay
+ *  ROOT macro - Toy Monte Carlo Simulation for Lambda_c decay
  *  Includes Momentum Resolution, DCA, hft ration, TPC efficiency ...
  *  Example for D0 --> Kpi
  *
  *  Authors:
  *            Guannan Xie (guannanxie@lbl.gov)
- *            **Mustafa Mustafa (mmustafa@lbl.gov)
+ *            Mustafa Mustafa (mmustafa@lbl.gov)
  *            Hao Qiu (hqiu@lbl.gov)
+ *            **Miroslav Simko (simkomir@fjfi.cvut.cz)
  *
  *  ** Code Maintainer
  *
@@ -49,26 +50,39 @@ void bookObjects();
 void write();
 TPythia6Decayer* pydecay;
 TNtuple* nt;
-// TNtuple* ntTMVA;
+TNtuple* ntTMVA;
 TFile* result;
 
 TF1* fWeightFunction = NULL;
 
-string outFileName = "Lc.toyMc.root";
+string outFileName;
 std::pair<int, int> const decayChannels(4277, 4354); // first and last Lc decay channel number
 std::pair<float, float> const momentumRange(0, 12);
 
 float const acceptanceRapidity = 1.0;
 float const M_KS = 0.49767;
-DecayMode const mDecayMode = kPionKaonProton;
+DecayMode mDecayMode;
 
 bool const saveNt = true;
-const int decayMode = 0;
+
+// centrality and p_T distributions
+TH1D *nBinCent;
+float const nBin[nCent] = {1012, 805, 577, 365, 221, 127, 66.8, 32.4, 15.};
+float maxNbin = 3221.2;
+TF1* fLevy;
+
+
+float const Dyield = 1.39751; /*D0 yiield per event*/ 
+float const LambdaDratio = 0.275;/*ratio between Lambda_c and D0, taken from arXiv:hep-ex/0508019 - Table 4*/ 
+
 //============== main  program ==================
-void toyMcEffLc(int npart = 100)
+void toyMcEffLc(unsigned long nEvts = 1000, int startCent = 0, int endCent = 8, const char *outputFileName = "Lc.toyMC.test.root", int modeOfDecay = 3)
 {
    // cout << "Mass = " << M_LAMBDA_C_PLUS << endl;
 
+   outFileName = outputFileName;
+   mDecayMode = (DecayMode)modeOfDecay;
+   
    gRandom->SetSeed();
 
    pydecay = TPythia6Decayer::Instance();
@@ -83,7 +97,7 @@ void toyMcEffLc(int npart = 100)
    // cin >> input;
    // TPythia6::Instance()->Pylist(12); // this is for writing the Decay table to std_out
 
-   loadAllDistributions();
+   loadAllDistributions(startCent, endCent);
    bookObjects();
 
    
@@ -125,11 +139,14 @@ void toyMcEffLc(int npart = 100)
        break;       
    }
 
+   unsigned long const npart = (unsigned long) floor( Dyield * LambdaDratio * branchingRatio * (double)nEvts * 0.5*totalNBin/maxNbin); // has to be divided by 2 because we are creating LC+,LC- pairs
+   cout << "Number of produced Lambda_C: " << npart*2 << endl;
+
    TLorentzVector* b_d = new TLorentzVector;
    TClonesArray ptl("TParticle", 10);
    for (int ipart = 0; ipart < npart; ipart++)
    {
-      if (!(ipart % 500))
+      if (!(ipart % 5000))
          cout << "____________ 2*ipart = " << 2*ipart << " ________________" << endl;
 
       getKinematics(*b_d, M_LAMBDA_C_PLUS);
@@ -141,7 +158,7 @@ void toyMcEffLc(int npart = 100)
       {
 	nt->AutoSave("SaveSelf");
 	// nt->FlushBaskets();
-	// ntTMVA->AutoSave("SaveSelf");
+	ntTMVA->AutoSave("SaveSelf");
 	// ntTMVA->FlushBaskets();
       }
    }
@@ -149,6 +166,7 @@ void toyMcEffLc(int npart = 100)
    write();
    delete b_d;
 }
+// =======================================================
 
 void setDecayChannels(int const mdme)
 {
@@ -156,6 +174,7 @@ void setDecayChannels(int const mdme)
    TPythia6::Instance()->SetMDME(mdme, 1, 1);
 }
 
+// =======================================================
 void decayAndFill(int const kf, TLorentzVector* b, double const weight, TClonesArray& daughters)
 {
    pydecay->Decay(kf, b);
@@ -205,9 +224,10 @@ void decayAndFill(int const kf, TLorentzVector* b, double const weight, TClonesA
    }
 }
 
+// =======================================================
 void fill(int const kf, TLorentzVector* b, double weight, TLorentzVector const& kMom, TLorentzVector const& piMom, TLorentzVector const& pMom, TVector3 v00)
 {
-   int const centrality = floor(nCent * gRandom->Rndm());
+   int const centrality = floor(nBinCent->GetRandom());
 
    TVector3 const vertex = getVertex(centrality);
    // smear primary vertex
@@ -277,7 +297,7 @@ void fill(int const kf, TLorentzVector* b, double weight, TLorentzVector const& 
 
                        // save
 
-   cout << "saving..." << endl;
+   // cout << "saving..." << endl;
    // error block
    try
    {
@@ -368,8 +388,8 @@ void fill(int const kf, TLorentzVector* b, double weight, TLorentzVector const& 
        arr[iArr++] = isPiHft;
        arr[iArr++] = isPhft;
 
-       arr[iArr++] = resMass(pMom, kMom, piMom, decayMode);
-       arr[iArr++] = resMass(pRMom, kRMom, piRMom, decayMode);
+       arr[iArr++] = resMass(pMom, kMom, piMom, mDecayMode);
+       arr[iArr++] = resMass(pRMom, kRMom, piRMom, mDecayMode);
 
        arr[iArr++] = vDistMax;
        arr[iArr++] = vDist1;
@@ -385,60 +405,60 @@ void fill(int const kf, TLorentzVector* b, double weight, TLorentzVector const& 
      throw ba;
    }
    
-   // // error block
-   // try	
-   // {
-   //   // __________________________________________
-   //   // using cuts
-   //   // __________________________________________
-   //   bool const PtCut = pRMom.Perp() > 0.3 && kRMom.Perp() > 0.3 && piRMom.Perp() > 0.3;
-   //   bool const dcaCut = dca12 < 200 && dca23 < 200 && dca13 < 200;
-   //   bool const dLengthCut = decayLength > 30;
-   //   bool const cosThetaCut = cosTheta > 0.98;
-   //   bool const HftCut = isPhft && isKhft && isPiHft;
-   //   bool const EtaCut = TMath::Abs(kRMom.PseudoRapidity()) < 1. && TMath::Abs(pRMom.PseudoRapidity()) < 1. && TMath::Abs(piRMom.PseudoRapidity()) < 1.;
+   // error block
+   try	
+   {
+     // __________________________________________
+     // using cuts
+     // __________________________________________
+     bool const PtCut = pRMom.Perp() > 0.3 && kRMom.Perp() > 0.3 && piRMom.Perp() > 0.3;
+     bool const dcaCut = dca12 < 200 && dca23 < 200 && dca13 < 200;
+     bool const dLengthCut = decayLength > 30;
+     bool const cosThetaCut = cosTheta > 0.98;
+     bool const HftCut = isPhft && isKhft && isPiHft;
+     bool const EtaCut = TMath::Abs(kRMom.PseudoRapidity()) < 1. && TMath::Abs(pRMom.PseudoRapidity()) < 1. && TMath::Abs(piRMom.PseudoRapidity()) < 1.;
 
-   //   if ( !( PtCut && dcaCut && dLengthCut && cosThetaCut && HftCut && EtaCut ) )
-   //     return;
+     if ( !( PtCut && dcaCut && dLengthCut && cosThetaCut && HftCut && EtaCut ) )
+       return;
 
-   //   // __________________________________________
-   //   // end of cuts
-   //   // filling TMVA histograms
-   //   const float umToCm = 0.0001;
+     // __________________________________________
+     // end of cuts
+     // filling TMVA histograms
+     const float umToCm = 0.0001;
 
-   //   float TMVA[100];
-   //   int iTMVA = 0;
+     float TMVA[100];
+     int iTMVA = 0;
 
-   //   TMVA[iTMVA++] = rMom.M();
-   //   TMVA[iTMVA++] = rMom.Perp();
-   //   TMVA[iTMVA++] = 1;
-   //   TMVA[iTMVA++] = rMom.Phi();
-   //   TMVA[iTMVA++] = rMom.PseudoRapidity();
+     TMVA[iTMVA++] = rMom.M();
+     TMVA[iTMVA++] = rMom.Perp();
+     TMVA[iTMVA++] = 1;
+     TMVA[iTMVA++] = rMom.Phi();
+     TMVA[iTMVA++] = rMom.PseudoRapidity();
 
-   //   TMVA[iTMVA++] = dca12*umToCm;
-   //   TMVA[iTMVA++] = dca23*umToCm;
-   //   TMVA[iTMVA++] = dca13*umToCm;
+     TMVA[iTMVA++] = dca12*umToCm;
+     TMVA[iTMVA++] = dca23*umToCm;
+     TMVA[iTMVA++] = dca13*umToCm;
 
-   //   TMVA[iTMVA++] = cosTheta;
-   //   TMVA[iTMVA++] = decayLength*umToCm;
+     TMVA[iTMVA++] = cosTheta;
+     TMVA[iTMVA++] = decayLength*umToCm;
 
-   //   TMVA[iTMVA++] = kRMom.Perp();
-   //   TMVA[iTMVA++] = pRMom.Perp();
-   //   TMVA[iTMVA++] = piRMom.Perp();
+     TMVA[iTMVA++] = kRMom.Perp();
+     TMVA[iTMVA++] = pRMom.Perp();
+     TMVA[iTMVA++] = piRMom.Perp();
 
-   //   TMVA[iTMVA++] = kRDca*umToCm;
-   //   TMVA[iTMVA++] = pRDca*umToCm;
-   //   TMVA[iTMVA++] = piRDca*umToCm;
+     TMVA[iTMVA++] = kRDca*umToCm;
+     TMVA[iTMVA++] = pRDca*umToCm;
+     TMVA[iTMVA++] = piRDca*umToCm;
 
-   //   TMVA[iTMVA++] = vDistMax*umToCm;
+     TMVA[iTMVA++] = vDistMax*umToCm;
 
-   //   ntTMVA->Fill(TMVA);
-   // }
-   // catch(std::bad_alloc &ba)
-   // {
-   //   cerr << "bad_alloc in saving \"ntTMVA\": " << ba.what() << endl;
-   //   throw ba;
-   // }
+     ntTMVA->Fill(TMVA);
+   }
+   catch(std::bad_alloc &ba)
+   {
+     cerr << "bad_alloc in saving \"ntTMVA\": " << ba.what() << endl;
+     throw ba;
+   }
 }
 
 //___________
@@ -471,7 +491,8 @@ float resMass(TLorentzVector const &pMom, TLorentzVector const &kMom, TLorentzVe
 //___________
 void getKinematics(TLorentzVector& b, double const mass)
 {
-   float const pt = gRandom->Uniform(momentumRange.first, momentumRange.second);
+   float const pt = fLevy->GetRandom();
+   // float const pt = gRandom->Uniform(momentumRange.first, momentumRange.second);
    //cout << "Momentum: " << pt << endl;
    float const y = gRandom->Uniform(-acceptanceRapidity, acceptanceRapidity);
    float const phi = TMath::TwoPi() * gRandom->Rndm();
@@ -500,19 +521,37 @@ void bookObjects()
                     "p2RM:p2RPt:p2REta:p2RY:p2RPhi:p2RVx:p2RVy:p2RVz:p2RDca:p2Tpc:" // Rc Pi -
                     "p1Hft:p2Hft",BufSize);
 
-//    ntTMVA = new TNtuple("ntTMVA", "", "m:pt:charges:phi:eta:" // basic properties of Lambda_c
-// 				      "dcaDaugthers31:dcaDaugthers23:dcaDaugthers12:" // dca daughters (pi-K, pi-p, p-K)
-// 				      "cosPntAngle:dLength:" // cosTheta and decay Length
-// 				      "p1pt:p2pt:p3pt:"
-// 				      "p1Dca:p2Dca:p3Dca:" // daughters (K, p, pi)
-// 				      "maxVertexDist", BufSize);
+   ntTMVA = new TNtuple("ntTMVA", "", "m:pt:charges:phi:eta:" // basic properties of Lambda_c
+				      "dcaDaugthers31:dcaDaugthers23:dcaDaugthers12:" // dca daughters (pi-K, pi-p, p-K)
+				      "cosPntAngle:dLength:" // cosTheta and decay Length
+				      "p1pt:p2pt:p3pt:"
+				      "p1Dca:p2Dca:p3Dca:" // daughters (K, p, pi)
+				      "maxVertexDist", BufSize);
 
+   // setting the centrality dependence histogram
+   nBinCent = new TH1D("nBinCent", "Number of bins vs centrality", endCentrality - beginCentrality + 1, beginCentrality, endCentrality);
+   for (int i = 0; i < endCentrality - beginCentrality + 1; ++i)   
+   {
+      nBinCent->SetBinContent(i+1, nBin[beginCentrality + i]);
+      totalNBin+=nBin[beginCentrality + i];
+   }
+
+   // p_T spectrum
+   fLevy = new TF1("fLevy", "[0]*TMath::Exp(-[1]/(x-[3]))*TMath::Power(x-[3],1-[2])*x", momentumRange.first, momentumRange.second);
+   // in latex: $A  \left( \frac{\mu}{x-\phi} \right)^{1-\alpha} \exp \left(- \frac{\mu}{x-\phi}\right)$
+   // parameters: A = 8.17808e+06, \mu = 1.92432e+01, \alpha = 1.39339e+01, \phi = -9.04949e-01
+   //
+   // this was fitted from published D0 data
+   // The additional p_T is from Jacobian
+   //
+   fLevy->SetParameters(8.17808e+06, 1.92432e+01, 1.39339e+01, -9.04949e-01);
 }
 //___________
 void write()
 {
    result->cd();
    nt->Write();
-   // ntTMVA->Write();
+   ntTMVA->Write();
    result->Close();
 }
+//___________
