@@ -78,6 +78,7 @@ float const LambdaDratio = 0.275;/*ratio between Lambda_c and D0, taken from arX
 //============== main  program ==================
 void toyMcEffLc(unsigned long nEvts = 1000, int startCent = 0, int endCent = 8, const char *outputFileName = "Lc.toyMC.test.root", int modeOfDecay = 3)
 {
+   cout << "Ntuples will be saved to \"" << outputFileName << "\"" << endl;
    // cout << "Mass = " << M_LAMBDA_C_PLUS << endl;
 
    outFileName = outputFileName;
@@ -156,6 +157,7 @@ void toyMcEffLc(unsigned long nEvts = 1000, int startCent = 0, int endCent = 8, 
 
       if (ipart%1000 == 1) // save
       {
+	result->cd();
 	nt->AutoSave("SaveSelf");
 	// nt->FlushBaskets();
 	ntTMVA->AutoSave("SaveSelf");
