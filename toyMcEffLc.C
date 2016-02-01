@@ -63,7 +63,7 @@ float const acceptanceRapidity = 1.0;
 float const M_KS = 0.49767;
 DecayMode mDecayMode;
 
-bool const saveNt = true;
+bool const saveNt = false;
 
 // centrality and p_T distributions
 TH1D *nBinCent;
@@ -144,7 +144,7 @@ void toyMcEffLc(unsigned long nEvts = 1000, int startCent = 0, int endCent = 8, 
 
    TLorentzVector* b_d = new TLorentzVector;
    TClonesArray ptl("TParticle", 10);
-   for (int ipart = 0; ipart < npart; ipart++)
+   for (unsigned long ipart = 0; ipart < npart; ipart++)
    {
       if (!(ipart % 5000))
          cout << "____________ 2*ipart = " << 2*ipart << " ________________" << endl;

@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?> 
 <job >
   <command>
-    set homeDir=/global/project/projectdirs/star/pwg/starhf/simkomir/LambdaC/DataDrivenFastSim
+
+    # Coppying code and root files
+    set homeDir=&home;
     cp ${homeDir}/IncludeProton.tar		                    .
     cp ${homeDir}/Eff_*.root           		                    .
     cp ${homeDir}/toyMcEffLc.C                                      .
@@ -11,19 +13,39 @@
     cp ${homeDir}/Run14_After107_Vz_Cent.root                       .
     cp ${homeDir}/momentum_resolution.root                          .
     cp ${homeDir}/HFT_Ratio_VsPt_Centrality_Eta_Phi_Vz_Zdcx_v4.root .
+    # unzipping root files
     tar -xzf IncludeProton.tar
+
+    # Control messages
+    echo Starting in ${PWD}
+    echo Files coppied:
+    ls
     
+    # Starting the code
     starver SL15c
     # kKstarProton=0, kLambda1520Pion=1, kDeltaPPkaon=2, kPionKaonProton=3, kLambdaPion=4, kKshortProton=5
-    ./runToyMC.sh 1000000
+    mkdir production
+    ./runToyMC.sh &nEvts; &startCent; &endCent; &outName;
 
-    tar -czf Lc.toyMc.root.tar Lc.toyMc.root
-    cp Lc.toyMc.root.tar ${homeDir}
-    tar -xzf ${homeDir}/Lc.toyMc.root.tar
+    # Coppying output
+    echo Done ... zipping data '"'&outName;'"' ...
+    if ( -f &outName; ) then 
+      tar -czf &outName;.tar &outName;
+    else
+      echo '"'&outName;'"' does not exist
+      exit -1
+    endif
 
+    echo Copying the data to ${homeDir}/production ...
+    cp &outName;.tar ${homeDir}/production
+
+    echo Unzipping '"'${homeDir}/production/&outName;.tar'"' ...
+    tar -xzf ${homeDir}/production/&outName;.tar
+
+    echo Finished
 
   </command>
-  <stdout URL="file:/global/project/projectdirs/star/pwg/starhf/simkomir/LambdaC/DataDrivenFastSim/submit/lambdaCtoyMC.log" />
-  <stderr URL="file:/global/project/projectdirs/star/pwg/starhf/simkomir/LambdaC/DataDrivenFastSim/submit/lambdaCtoyMC.err"/>
+  <stdout URL="file:&home;/submit/LC.&startCent;-&endCent;.&JobId;.log"/>
+  <stderr URL="file:&home;/submit/LC.&startCent;-&endCent;.&JobId;.err"/>
 </job>
 
