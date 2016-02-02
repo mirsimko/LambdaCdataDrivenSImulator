@@ -63,7 +63,7 @@ float const acceptanceRapidity = 1.0;
 float const M_KS = 0.49767;
 DecayMode mDecayMode;
 
-bool const saveNt = false;
+bool const saveNt = true;
 
 // centrality and p_T distributions
 TH1D *nBinCent;
@@ -421,7 +421,28 @@ void fill(int const kf, TLorentzVector* b, double weight, TLorentzVector const& 
      bool const EtaCut = TMath::Abs(kRMom.PseudoRapidity()) < 1. && TMath::Abs(pRMom.PseudoRapidity()) < 1. && TMath::Abs(piRMom.PseudoRapidity()) < 1.;
 
      if ( !( PtCut && dcaCut && dLengthCut && cosThetaCut && HftCut && EtaCut ) )
+     {
+       // Which one did not go?
+       if(!PtCut)
+         cout << "PtCut == 0 ";
+       if(!dcaCut)
+         cout << "dcaCut == 0 ";
+       if(!dLengthCut)
+         cout << "dLengthCut == 0 ";
+       if(!cosThetaCut)
+         cout << "cosThetaCut == 0 ";
+       else
+         cout << "                 ";
+       if(!HftCut)
+         cout << "HftCut == 0 ";
+       if(!EtaCut)
+         cout << "EtaCut == 0 ";
+  
+       cout << endl;
        return;
+     }
+     else
+       cout << "Good Lambda_c" << endl;
 
      // __________________________________________
      // end of cuts
