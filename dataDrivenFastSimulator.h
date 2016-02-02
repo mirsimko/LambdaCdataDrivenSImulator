@@ -146,6 +146,10 @@ void loadAllDistributions(int startCent = 0, int endCent = 8)
            for(int iPhi = 0; iPhi < nPhisHftRatio; ++iPhi)
            {
              hHftRatio1[iParticle][iEta][iVz][iPhi][iCent] = (TH1D*)(fHftRatio1.Get(Form("mh1HFT1PtCentPartEtaVzPhiRatio_%i_%i_%i_%i_%i", iParticle, iEta, iVz, iPhi, iCent)));
+
+	     if(iParticle == 2)
+	       hHftRatio1[iParticle][iEta][iVz][iPhi][iCent] = hHftRatio1[1][iEta][iVz][iPhi][iCent] ; // Using kaons for now 
+
              hHftRatio1[iParticle][iEta][iVz][iPhi][iCent]->SetDirectory(0);
            }
          }
@@ -490,7 +494,10 @@ bool matchHft(int const iParticleIndex, double const vz, int const cent, TLorent
    int const iPhiIndex = getPhiIndexHftRatio(mom.Phi());
 
    int const bin = hHftRatio1[iParticleIndex][iEtaIndex][iVzIndex][iPhiIndex][cent]->FindBin(mom.Perp());
-   return gRandom->Rndm() < hHftRatio1[iParticleIndex][iEtaIndex][iVzIndex][iPhiIndex][cent]->GetBinContent(bin);
+   bool const isHft = gRandom->Rndm() < hHftRatio1[iParticleIndex][iEtaIndex][iVzIndex][iPhiIndex][cent]->GetBinContent(bin);
+   if (isHft && iParticleIndex == 2)
+     cout << "Good HFT track: iParticleIndex = " << iParticleIndex << endl;
+   return isHft;
 }
 
 inline int getIndex(int iParticle, int iEta, int iVz, int iCent, int iPt)

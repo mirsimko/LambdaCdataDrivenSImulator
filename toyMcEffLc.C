@@ -43,7 +43,7 @@ using namespace std;
 
 void setDecayChannels(int const mdme);
 void decayAndFill(int const kf, TLorentzVector* b, double const weight, TClonesArray& daughters);
-void fill(int const kf, TLorentzVector* b, double weight, TLorentzVector const& kMom, TLorentzVector const& piMom, TLorentzVector const& pMom, TVector3 v00);
+void fill(int const kf, TLorentzVector* b, double weight, TLorentzVector const& kMom, TLorentzVector const& piMom, TLorentzVector const& pMom, TVector3 v00, int LambdaCcharge);
 void getKinematics(TLorentzVector& b, double const mass);
 float resMass(TLorentzVector const &pMom, TLorentzVector const &kMom, TLorentzVector const &piMom, int decayMode);
 
@@ -206,7 +206,7 @@ void decayAndFill(int const kf, TLorentzVector* b, double const weight, TClonesA
             break;
          case 211:
             ptl0->Momentum(piMom);
-	    if(copysign(ptl0->GetPdgCode()))
+	    if(signbit(ptl0->GetPdgCode()))
 	      LambdaCcharge = -1;
 	    else
 	      LambdaCcharge = 1;
@@ -300,14 +300,14 @@ void fill(int const kf, TLorentzVector* b, double weight, TLorentzVector const& 
    float const cosTheta = (v0 - vertex).Unit().Dot(rMom.Vect().Unit());
 
    // cout << "is HFT track?" << endl;
-   bool const isPhft = matchHft(2,vertex.z(),centrality, pRMom);
-   bool const isKhft = matchHft(1,vertex.z(),centrality, kRMom);
-   bool const isPiHft = matchHft(0,vertex.z(),centrality, piRMom);
+   bool const isPiHft = matchHft(0, vertex.z(), centrality, piRMom);
+   bool const isKhft =  matchHft(1, vertex.z(), centrality, kRMom );
+   bool const isPhft =  matchHft(2, vertex.z(), centrality, pRMom );
 
    // is Tpc track?
-   bool const isKTpc = tpcReconstructed(0, -LambdaCcharge, centrality, kRMom);
-   bool const isPiTpc = tpcReconstructed(1, LambdaCcharge, centrality, piRMom);
-   bool const isKTpc = tpcReconstructed(2, LambdaCcharge, centrality, pRMom);
+   bool const isPiTpc = tpcReconstructed(0,  LambdaCcharge, centrality, piRMom);
+   bool const isKTpc =  tpcReconstructed(1, -LambdaCcharge, centrality, kRMom );
+   bool const isPTpc =  tpcReconstructed(2,  LambdaCcharge, centrality, pRMom );
 
                        // save
 
@@ -421,7 +421,7 @@ void fill(int const kf, TLorentzVector* b, double weight, TLorentzVector const& 
    {
      cerr << "bad_alloc in saving \"nt\": " << ba.what() << endl;
      throw ba;
-   }
+   } // end of error block
    
    // error block
    try	
@@ -440,40 +440,40 @@ void fill(int const kf, TLorentzVector* b, double weight, TLorentzVector const& 
      if ( !( PtCut && dcaCut && dLengthCut && cosThetaCut && HftCut && EtaCut && tpcCut) )
      {
        // Which one did not go?
-       cout << "| " ;
-       if(!PtCut)
-         cout << "PtCut == 0       | ";
-       else
-         cout << "                 | ";
-       if(!dcaCut)
-         cout << "dcaCut == 0      | ";
-       else
-         cout << "                 | ";
-       if(!dLengthCut)
-         cout << "dLengthCut == 0  | ";
-       else
-         cout << "                 | ";
-       if(!cosThetaCut)
-         cout << "cosThetaCut == 0 | ";
-       else
-         cout << "                 | ";
-       if(!HftCut)
-         cout << "HftCut == 0      | ";
-       else
-         cout << "                 | ";
-       if(!EtaCut)
-         cout << "EtaCut == 0      | ";
-       else
-         cout << "                 | ";
-       if(!tpcCut)
-         cout << "tpcCut == 0      | ";
-       else
-         cout << "                 | ";
+       // cout << "| " ;
+       // if(!PtCut)
+       //   cout << "PtCut == 0       | ";
+       // else
+       //   cout << "                 | ";
+       // if(!dcaCut)
+       //   cout << "dcaCut == 0      | ";
+       // else
+       //   cout << "                 | ";
+       // if(!dLengthCut)
+       //   cout << "dLengthCut == 0  | ";
+       // else
+       //   cout << "                 | ";
+       // if(!cosThetaCut)
+       //   cout << "cosThetaCut == 0 | ";
+       // else
+       //   cout << "                 | ";
+       // if(!HftCut)
+       //   cout << "HftCut == 0      | ";
+       // else
+       //   cout << "                 | ";
+       // if(!EtaCut)
+       //   cout << "EtaCut == 0      | ";
+       // else
+       //   cout << "                 | ";
+       // if(!tpcCut)
+       //   cout << "tpcCut == 0      | ";
+       // else
+       //   cout << "                 | ";
   
-       cout << endl;
+       // cout << endl;
 
-       if(HftCut)
-	 cout << "********************* HFT track *********************" << endl;
+       // if(HftCut)
+       //   cout << "********************* HFT track *********************" << endl;
 
        return;
      }
@@ -519,7 +519,7 @@ void fill(int const kf, TLorentzVector* b, double weight, TLorentzVector const& 
    {
      cerr << "bad_alloc in saving \"ntTMVA\": " << ba.what() << endl;
      throw ba;
-   }
+   } // end of error block
 }
 
 //___________
