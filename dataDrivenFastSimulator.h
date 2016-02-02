@@ -453,17 +453,30 @@ TVector3 getVertex(int const centrality)
 bool tpcReconstructed(int iParticleIndex, float charge, int cent, TLorentzVector const& mom)
 {
   TH1D* h = NULL;
+  if(charge == 0)
+  {
+    cerr << "In function \"tpcReconstructed\": Charge not assigned" << endl;
+    throw;
+  }
 
-  if(iParticleIndex == 0)
+  switch(iParticleIndex)
   {
-    if(charge>0) h = hTpcPiPlus[cent];
-    else h = hTpcPiMinus[cent];
-  }
-  else
-  {
-    if(charge>0) h = hTpcKPlus[cent];
-    else h = hTpcKMinus[cent];
-  }
+    case 0:
+      if(charge>0) h = hTpcPiPlus[cent];
+      else h = hTpcPiMinus[cent];
+      break;
+    case 1:
+      if(charge>0) h = hTpcKPlus[cent];
+      else h = hTpcKMinus[cent];
+      break;
+    case 2:
+      if(charge>0) h = hTpcPPlus[cent];
+      else h = hTpcPMinus[cent];
+      break;
+    default:
+      cerr << "In function \"tpcReconstructed\": Unkknown particle" << endl;
+      throw;
+  };
 
   int const bin = h->FindBin(mom.Perp());
 

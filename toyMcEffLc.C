@@ -17,6 +17,7 @@
 #include <iostream>
 #include <fstream>
 #include <new>
+#include <cmath>
 
 #include "TFile.h"
 #include "TH1F.h"
@@ -158,7 +159,8 @@ void toyMcEffLc(unsigned long nEvts = 1000, int startCent = 0, int endCent = 8, 
       if (ipart%1000 == 1) // save
       {
 	result->cd();
-	nt->AutoSave("SaveSelf");
+	if(saveNt)
+	  nt->AutoSave("SaveSelf");
 	// nt->FlushBaskets();
 	ntTMVA->AutoSave("SaveSelf");
 	// ntTMVA->FlushBaskets();
@@ -188,6 +190,7 @@ void decayAndFill(int const kf, TLorentzVector* b, double const weight, TClonesA
    TVector3 v00;
 
    int nTrk = daughters.GetEntriesFast();
+   int LambdaCcharge = 0;
    // cout << "Number of daughters: " <<  nTrk << endl;
    for (int iTrk = 0; iTrk < nTrk; ++iTrk)
    {
@@ -203,6 +206,10 @@ void decayAndFill(int const kf, TLorentzVector* b, double const weight, TClonesA
             break;
          case 211:
             ptl0->Momentum(piMom);
+	    if(copysign(ptl0->GetPdgCode()))
+	      LambdaCcharge = -1;
+	    else
+	      LambdaCcharge = 1;
 	    // cout << "Pion" << endl;
             break;
          case 2212:
@@ -217,7 +224,7 @@ void decayAndFill(int const kf, TLorentzVector* b, double const weight, TClonesA
 
    try
    {
-     fill(kf, b, weight, kMom, piMom, pMom, v00);
+     fill(kf, b, weight, kMom, piMom, pMom, v00, LambdaCcharge);
    }
    catch(std::bad_alloc &ba)
    {
@@ -227,7 +234,7 @@ void decayAndFill(int const kf, TLorentzVector* b, double const weight, TClonesA
 }
 
 // =======================================================
-void fill(int const kf, TLorentzVector* b, double weight, TLorentzVector const& kMom, TLorentzVector const& piMom, TLorentzVector const& pMom, TVector3 v00)
+void fill(int const kf, TLorentzVector* b, double weight, TLorentzVector const& kMom, TLorentzVector const& piMom, TLorentzVector const& pMom, TVector3 v00, int LambdaCcharge)
 {
    int const centrality = floor(nBinCent->GetRandom());
 
@@ -296,6 +303,11 @@ void fill(int const kf, TLorentzVector* b, double weight, TLorentzVector const& 
    bool const isPhft = matchHft(2,vertex.z(),centrality, pRMom);
    bool const isKhft = matchHft(1,vertex.z(),centrality, kRMom);
    bool const isPiHft = matchHft(0,vertex.z(),centrality, piRMom);
+
+   // is Tpc track?
+   bool const isKTpc = tpcReconstructed(0, -LambdaCcharge, centrality, kRMom);
+   bool const isPiTpc = tpcReconstructed(1, LambdaCcharge, centrality, piRMom);
+   bool const isKTpc = tpcReconstructed(2, LambdaCcharge, centrality, pRMom);
 
                        // save
 
@@ -390,6 +402,10 @@ void fill(int const kf, TLorentzVector* b, double weight, TLorentzVector const& 
        arr[iArr++] = isPiHft;
        arr[iArr++] = isPhft;
 
+       arr[iArr++] = isKTpc;
+       arr[iArr++] = isPiTpc;
+       arr[iArr++] = isPTpc;
+
        arr[iArr++] = resMass(pMom, kMom, piMom, mDecayMode);
        arr[iArr++] = resMass(pRMom, kRMom, piRMom, mDecayMode);
 
@@ -419,40 +435,52 @@ void fill(int const kf, TLorentzVector* b, double weight, TLorentzVector const& 
      bool const cosThetaCut = cosTheta > 0.98;
      bool const HftCut = isPhft && isKhft && isPiHft;
      bool const EtaCut = TMath::Abs(kRMom.PseudoRapidity()) < 1. && TMath::Abs(pRMom.PseudoRapidity()) < 1. && TMath::Abs(piRMom.PseudoRapidity()) < 1.;
+     bool const tpcCut = isKTpc && isPiTpc && isPTpc;
 
-     if ( !( PtCut && dcaCut && dLengthCut && cosThetaCut && HftCut && EtaCut ) )
+     if ( !( PtCut && dcaCut && dLengthCut && cosThetaCut && HftCut && EtaCut && tpcCut) )
      {
        // Which one did not go?
+       cout << "| " ;
        if(!PtCut)
-         cout << "PtCut == 0       ";
+         cout << "PtCut == 0       | ";
        else
-         cout << "                 ";
+         cout << "                 | ";
        if(!dcaCut)
-         cout << "dcaCut == 0      ";
+         cout << "dcaCut == 0      | ";
        else
-         cout << "                 ";
+         cout << "                 | ";
        if(!dLengthCut)
-         cout << "dLengthCut == 0  ";
+         cout << "dLengthCut == 0  | ";
        else
-         cout << "                 ";
+         cout << "                 | ";
        if(!cosThetaCut)
-         cout << "cosThetaCut == 0 ";
+         cout << "cosThetaCut == 0 | ";
        else
-         cout << "                 ";
+         cout << "                 | ";
        if(!HftCut)
-         cout << "HftCut == 0      ";
+         cout << "HftCut == 0      | ";
        else
-         cout << "                 ";
+         cout << "                 | ";
        if(!EtaCut)
-         cout << "EtaCut == 0      ";
+         cout << "EtaCut == 0      | ";
        else
-         cout << "                 ";
+         cout << "                 | ";
+       if(!tpcCut)
+         cout << "tpcCut == 0      | ";
+       else
+         cout << "                 | ";
   
        cout << endl;
+
+       if(HftCut)
+	 cout << "********************* HFT track *********************" << endl;
+
        return;
      }
      else
+       cout << "************************************" << endl;
        cout << "Good Lambda_c" << endl;
+       cout << "************************************" << endl;
 
      // __________________________________________
      // end of cuts
@@ -544,15 +572,24 @@ void bookObjects()
    result->cd();
 
    int BufSize = (int)pow(2., 16.);
-   nt = new TNtuple("nt", "", "cent:vx:vy:vz:"
-                    "pid:m:pt:eta:y:phi:v0x:v0y:v0z:" // MC Ks
-                    "rM:rPt:rEta:rY:rPhi:rV0x:rV0y:rV0z:" // Rc Ks
-                    "dca12:decayLength:dcaD0ToPv:cosTheta:angle12:cosThetaStar:" // Rc pair
-                    "p1M:p1Pt:p1Eta:p1Y:p1Phi:p1Dca:" // MC Pi +
-                    "p1RM:p1RPt:p1REta:p1RY:p1RPhi:p1RVx:p1RVy:p1RVz:p1RDca:p1Tpc:" // Rc Pi +
-                    "p2M:p2Pt:p2Eta:p2Y:p2Phi:p2Dca:" // MC Pi -
-                    "p2RM:p2RPt:p2REta:p2RY:p2RPhi:p2RVx:p2RVy:p2RVz:p2RDca:p2Tpc:" // Rc Pi -
-                    "p1Hft:p2Hft",BufSize);
+   if(saveNt)
+   {
+     nt = new TNtuple("nt", "", "cent:vx:vy:vz:"
+		      "pid:m:pt:eta:y:phi:v0x:v0y:v0z:"
+		      "rM:rPt:rEta:rY:rPhi:"
+		      "dca12:dca23:dca13:decayLength:dcaToPv:cosTheta:" // Rc pair
+		      "kM:kPt:kEta:kY:kPhi:kDca:" // MC Kaon
+		      "kRM:kRPt:kREta:kRY:kRPhi:kRVx:kRVy:kRVz:kRDca:" // Rc Kaon
+		      "piM:piPt:piEta:piY:piPhi:piDca:" // MC Pion
+		      "piRM:piRPt:piREta:piRY:piRPhi:piRVx:piRVy:piRVz:piRDca:" // Rc Pion
+		      "pM:pPt:pEta:pY:pPhi:pDca:" // MC Proton
+		      "pRM:pRPt:pREta:pRY:pRPhi:pRVx:pRVy:pRVz:pRDca:" // Rc Proton
+		      "kHft:piHft:pHft:"
+		      "kTpc:piTpc:pTpc:"
+		      "MResonance:MRResonance:"
+		      "maxVertexDist:vDist1:vDist2:vDist3",
+		      BufSize); // distances of vertices of track pairs
+   }
 
    ntTMVA = new TNtuple("ntTMVA", "", "m:pt:charges:phi:eta:" // basic properties of Lambda_c
 				      "dcaDaugthers31:dcaDaugthers23:dcaDaugthers12:" // dca daughters (pi-K, pi-p, p-K)
@@ -583,7 +620,8 @@ void bookObjects()
 void write()
 {
    result->cd();
-   nt->Write();
+   if(saveNt)
+     nt->Write();
    ntTMVA->Write();
    result->Close();
 }
