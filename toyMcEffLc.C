@@ -424,19 +424,29 @@ void fill(int const kf, TLorentzVector* b, double weight, TLorentzVector const& 
      {
        // Which one did not go?
        if(!PtCut)
-         cout << "PtCut == 0 ";
+         cout << "PtCut == 0       ";
+       else
+         cout << "                 ";
        if(!dcaCut)
-         cout << "dcaCut == 0 ";
+         cout << "dcaCut == 0      ";
+       else
+         cout << "                 ";
        if(!dLengthCut)
-         cout << "dLengthCut == 0 ";
+         cout << "dLengthCut == 0  ";
+       else
+         cout << "                 ";
        if(!cosThetaCut)
          cout << "cosThetaCut == 0 ";
        else
          cout << "                 ";
        if(!HftCut)
-         cout << "HftCut == 0 ";
+         cout << "HftCut == 0      ";
+       else
+         cout << "                 ";
        if(!EtaCut)
-         cout << "EtaCut == 0 ";
+         cout << "EtaCut == 0      ";
+       else
+         cout << "                 ";
   
        cout << endl;
        return;
