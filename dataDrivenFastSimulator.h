@@ -495,8 +495,6 @@ bool matchHft(int const iParticleIndex, double const vz, int const cent, TLorent
 
    int const bin = hHftRatio1[iParticleIndex][iEtaIndex][iVzIndex][iPhiIndex][cent]->FindBin(mom.Perp());
    bool const isHft = gRandom->Rndm() < hHftRatio1[iParticleIndex][iEtaIndex][iVzIndex][iPhiIndex][cent]->GetBinContent(bin);
-   if (isHft && iParticleIndex == 2)
-     cout << "Good HFT track: iParticleIndex = " << iParticleIndex << endl;
    return isHft;
 }
 

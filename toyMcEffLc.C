@@ -439,48 +439,11 @@ void fill(int const kf, TLorentzVector* b, double weight, TLorentzVector const& 
 
      if ( !( PtCut && dcaCut && dLengthCut && cosThetaCut && HftCut && EtaCut && tpcCut) )
      {
-       // Which one did not go?
-       // cout << "| " ;
-       // if(!PtCut)
-       //   cout << "PtCut == 0       | ";
-       // else
-       //   cout << "                 | ";
-       // if(!dcaCut)
-       //   cout << "dcaCut == 0      | ";
-       // else
-       //   cout << "                 | ";
-       // if(!dLengthCut)
-       //   cout << "dLengthCut == 0  | ";
-       // else
-       //   cout << "                 | ";
-       // if(!cosThetaCut)
-       //   cout << "cosThetaCut == 0 | ";
-       // else
-       //   cout << "                 | ";
-       // if(!HftCut)
-       //   cout << "HftCut == 0      | ";
-       // else
-       //   cout << "                 | ";
-       // if(!EtaCut)
-       //   cout << "EtaCut == 0      | ";
-       // else
-       //   cout << "                 | ";
-       // if(!tpcCut)
-       //   cout << "tpcCut == 0      | ";
-       // else
-       //   cout << "                 | ";
-  
-       // cout << endl;
-
-       // if(HftCut)
-       //   cout << "********************* HFT track *********************" << endl;
-
        return;
      }
-     else
-       cout << "************************************" << endl;
-       cout << "Good Lambda_c" << endl;
-       cout << "************************************" << endl;
+     // cout << "************************************" << endl;
+     // cout << "Good Lambda_c" << endl;
+     // cout << "************************************" << endl;
 
      // __________________________________________
      // end of cuts
