@@ -64,7 +64,7 @@ float const acceptanceRapidity = 1.0;
 float const M_KS = 0.49767;
 DecayMode mDecayMode;
 
-bool const saveNt = true;
+bool const saveNt = false;
 
 // centrality and p_T distributions
 TH1D *nBinCent;
