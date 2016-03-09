@@ -10,6 +10,6 @@ for j in $( seq -w 1 100 ); do
     echo '******************************************************'
     echo Submitting for centralities $beginCent and $endCent
     echo '******************************************************'
-    star-submit-template -u ie -template runjob.xml -entities nEvts=10853300000,startCent=$beginCent,endCent=$endCent,outName=LC.toyMC-${beginCent}-${endCent}.$j.root,home=/gpfs/mnt/gpfs01/star/pwg/msimko/LambdaCdataDrivenSImulator,JobId=$now  
+    star-submit-template -template runjob.xml -entities nEvts=10853300000,startCent=$beginCent,endCent=$endCent,outName=LC.toyMC-${beginCent}-${endCent}.$j.root,home=/global/project/projectdirs/star/pwg/starhf/simkomir/LambdaC/DataDrivenFastSim,JobId=$now  
   done
 done

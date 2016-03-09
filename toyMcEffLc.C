@@ -148,7 +148,7 @@ void toyMcEffLc(unsigned long nEvts = 1000, int startCent = 0, int endCent = 8, 
    TClonesArray ptl("TParticle", 10);
    for (unsigned long ipart = 0; ipart < npart; ipart++)
    {
-      if (!(ipart % 5000))
+      if (!(ipart % 50000))
          cout << "____________ 2*ipart = " << 2*ipart << " ________________" << endl;
 
       getKinematics(*b_d, M_LAMBDA_C_PLUS);
