@@ -129,7 +129,7 @@ void loadAllDistributions(int startCent = 0, int endCent = 8)
    fVertex.Close();
 
    cout << "Loading input HFT ratios and DCA ..." << endl;
-   TFile fHftRatio1("IncludeProton/HFTRatio/HFT_Ratio_VsPt_Centrality_Eta_Phi_Vz_Zdcx.root");
+   TFile fHftRatio1("IncludeProton/HFTRatio/HFT_Ratio_VsPt_Centrality_Eta_Phi_Vz_Zdcx_Mar8.root");
    TFile fDca1("IncludeProton/DCA/Proton/2DProjection_simCent_NoBinWidth_3D_Dca_VsPt_Centrality_Eta_Phi_Vz_Zdcx_proton.root");
    TFile fDca2("IncludeProton/DCA/PionKaon/2DProjection_simCent_NoBinWidth_3D_Dca_VsPt_Centrality_Eta_Phi_Vz_Zdcx_v3.root");
 
@@ -147,8 +147,13 @@ void loadAllDistributions(int startCent = 0, int endCent = 8)
            {
              hHftRatio1[iParticle][iEta][iVz][iPhi][iCent] = (TH1D*)(fHftRatio1.Get(Form("mh1HFT1PtCentPartEtaVzPhiRatio_%i_%i_%i_%i_%i", iParticle, iEta, iVz, iPhi, iCent)));
 
-	     if(iParticle == 2)
-	       hHftRatio1[iParticle][iEta][iVz][iPhi][iCent] = hHftRatio1[1][iEta][iVz][iPhi][iCent] ; // Using kaons for now 
+	     // if(iParticle == 2)
+	     // {
+	     //   TH1D* h = hHftRatio1[iParticle][iEta][iVz][iPhi][iCent];
+
+	     //   if(h->Integral() == 0)
+	     //     cout << h->Name() << " has zero efficiency" << endl;
+	     // }
 
              hHftRatio1[iParticle][iEta][iVz][iPhi][iCent]->SetDirectory(0);
            }
