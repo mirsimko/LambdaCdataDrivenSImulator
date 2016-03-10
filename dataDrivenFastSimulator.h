@@ -400,11 +400,11 @@ TVector3 smearPosData(int const iParticleIndex, double const vz, int cent, TLore
    double sigmaPosZ = 0;
    double sigmaPosXY = 0;
 
-   if(cent == 8) cent = 7;
+   // if(cent == 8) cent = 7;
 
    if(!h2Dca[getIndex(iParticleIndex,iEtaIndex,iVzIndex,cent,iPtIndex)])
    {
-     cerr << "smearPosData: 2Dca[" << iParticleIndex << "][" << iEtaIndex << "][" << iVzIndex << "][" << cent << "][" << iPtIndex << "] not found ... ending program" << endl;
+     cerr << "smearPosData: h2Dca[" << iParticleIndex << "][" << iEtaIndex << "][" << iVzIndex << "][" << cent << "][" << iPtIndex << "] not found ... ending program" << endl;
      throw;
    }
    TH2D *hist;
